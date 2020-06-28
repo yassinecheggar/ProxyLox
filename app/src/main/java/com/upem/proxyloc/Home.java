@@ -106,7 +106,8 @@ public class Home extends AppCompatActivity {
                 .setId3("2")
                 .setManufacturer(0x0118) // Radius Networks.  Change this for other beacon layouts
                 .setTxPower(-59)
-                .setDataFields(Arrays.asList(new Long[] {0l})) // Remove this for beacon layouts without d: fields
+                .setBluetoothAddress("12")
+                .setDataFields(Arrays.asList(new Long[] {3l})) // Remove this for beacon layouts without d: fields
                 .build();
 
         BeaconParser beaconParser = new BeaconParser()
