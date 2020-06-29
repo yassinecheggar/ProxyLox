@@ -16,4 +16,6 @@
     <string name="menu_send">Send</string>
     <string name="google_maps_api_key">AIzaSyAVu4BSdJAG9EOnbpjyTXtERVhtsdeRKxg</string>
     <string name="style_json"></string>
+    <string name="channel_name">ProxyLoc</string>
+
 </resources>
