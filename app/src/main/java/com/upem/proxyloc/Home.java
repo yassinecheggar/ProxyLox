@@ -50,6 +50,7 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
     private AppBarConfiguration mAppBarConfiguration;
     protected static final String TAG = "MonitoringActivity";
     private BeaconManager beaconManager;
+    private int Ntfcount=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,17 +157,20 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
             @Override
             public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
                 if (beacons.size() > 0) {
-                    Log.i(TAG, "The first beacon I see is about "+beacons.iterator().next().getDistance()+" meters away."+beacons.iterator().next().getDataFields());
+                    Log.i(TAG, "The first beacon I see is about "+beacons.iterator().next().getDistance()+" meters away."+beacons.size());
                     NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(),"lemubitA")
                             .setSmallIcon(R.drawable.ic_warning_black_24dp)
-                            .setContentTitle("my icone")
-                            .setContentText("this is a warniing")
-                            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                            .setContentTitle("Warning")
+                            .setContentText(" Device found near you ")
+                            .setPriority(NotificationCompat.PRIORITY_MAX);
 
                     NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
 
-// notificationId is a unique int for each notification that you must define
+                    // notificationId is a unique int for each notification that you must define
+                    if(Ntfcount < beacons.size()){
                     notificationManager.notify(100, builder.build());
+                    Ntfcount ++;
+                    }
                 }
             }
         });
