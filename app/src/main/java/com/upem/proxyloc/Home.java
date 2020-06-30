@@ -1,5 +1,6 @@
 package com.upem.proxyloc;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.bluetooth.le.AdvertiseCallback;
@@ -50,15 +51,19 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
     private AppBarConfiguration mAppBarConfiguration;
     protected static final String TAG = "MonitoringActivity";
     private BeaconManager beaconManager;
-    private int Ntfcount=0;
+    private int Ntfcount = 0;
+    private static final int REQUEST_ENABLE_LOCATION = 457;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().hide();
+
+
         FloatingActionButton fab = findViewById(R.id.fab);
 
         fab.setOnClickListener(new View.OnClickListener() {
@@ -85,10 +90,9 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
-         createNotificationChannel();
+        createNotificationChannel();
 
         //startService(new Intent(getBaseContext(), TopicSubscriber.class));
-
 
     }
 
@@ -107,9 +111,9 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
     }
 
 
-    public  void  dostuf(){
+    public void dostuf() {
 
-        final String TAG ="BLE";
+        final String TAG = "BLE";
         Beacon beacon = new Beacon.Builder()
                 .setId1("2f234454-cf6d-4a0f-adf2-f4911ba9ffa6")
                 .setId2("1")
@@ -117,7 +121,7 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
                 .setManufacturer(0x0118) // Radius Networks.  Change this for other beacon layouts
                 .setTxPower(-59)
                 .setBluetoothAddress("12")
-                .setDataFields(Arrays.asList(new Long[] {3l})) // Remove this for beacon layouts without d: fields
+                .setDataFields(Arrays.asList(new Long[]{3l})) // Remove this for beacon layouts without d: fields
                 .build();
 
         BeaconParser beaconParser = new BeaconParser()
@@ -127,7 +131,7 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
 
             @Override
             public void onStartFailure(int errorCode) {
-                Log.e(TAG, "Advertisement start failed with code: "+errorCode);
+                Log.e(TAG, "Advertisement start failed with code: " + errorCode);
             }
 
             @Override
@@ -138,15 +142,20 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
 
     }
 
-    public  void  dostuf2(){
-
-        beaconManager = BeaconManager.getInstanceForApplication(this);
-        // To detect proprietary beacons, you must add a line like below corresponding to your beacon
-        // type.  Do a web search for "setBeaconLayout" to get the proper expression.
-        // beaconManager.getBeaconParsers().add(new BeaconParser().
-        // setBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25"));
-        beaconManager.bind(this);
-
+    public void dostuf2() {
+        if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(
+                    new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION},
+                    REQUEST_ENABLE_LOCATION);
+        } else {
+            beaconManager = BeaconManager.getInstanceForApplication(this);
+            // To detect proprietary beacons, you must add a line like below corresponding to your beacon
+            // type.  Do a web search for "setBeaconLayout" to get the proper expression.
+            // beaconManager.getBeaconParsers().add(new BeaconParser().
+            // setBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25"));
+            beaconManager.bind(this);
+        }
     }
 
     @Override
@@ -157,8 +166,8 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
             @Override
             public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
                 if (beacons.size() > 0) {
-                    Log.i(TAG, "The first beacon I see is about "+beacons.iterator().next().getDistance()+" meters away."+beacons.size());
-                    NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(),"lemubitA")
+                    Log.i(TAG, "The first beacon I see is about " + beacons.iterator().next().getDistance() + " meters away." + beacons.size());
+                    NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), "lemubitA")
                             .setSmallIcon(R.drawable.ic_warning_black_24dp)
                             .setContentTitle("Warning")
                             .setContentText(" Device found near you ")
@@ -167,9 +176,9 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
                     NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
 
                     // notificationId is a unique int for each notification that you must define
-                    if(Ntfcount < beacons.size()){
-                    notificationManager.notify(100, builder.build());
-                    Ntfcount ++;
+                    if (Ntfcount < beacons.size()) {
+                        notificationManager.notify(100, builder.build());
+                        Ntfcount++;
                     }
                 }
             }
@@ -177,15 +186,14 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
 
         try {
             beaconManager.startRangingBeaconsInRegion(new Region("12", null, null, null));
-        } catch (RemoteException e) {  e.printStackTrace();  }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
 
-
-
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
             case 1: {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -206,16 +214,8 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
                 }
                 return;
             }
+        }
 
-
-
-
-
-
-
-
-
-}
     }
 
     private void createNotificationChannel() {

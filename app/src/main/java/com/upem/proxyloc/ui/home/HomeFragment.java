@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -26,12 +27,14 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.upem.proxyloc.R;
+import com.upem.proxyloc.models.MyLocations;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -58,12 +61,13 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private ArrayList<String> permissionsRejected = new ArrayList<>();
     private ArrayList<String> permissions = new ArrayList<>();
     private static final int ALL_PERMISSIONS_RESULT = 1011;
-
+    private LatLng Cor;
     private Activity ctx;
     LocationManager locationManager;
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     Marker marker;
     LocationListener locationListener;
+
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -101,12 +105,19 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                     //String result = addresses.get(0).getLocality()+":";
                     //result += addresses.get(0).getCountryName();
                     LatLng latLng = new LatLng(latitude, longitude);
+                    Cor = latLng;
                     if (marker != null) {
                         marker.remove();
-                        marker = gmap.addMarker(new MarkerOptions().position(latLng).title("lola"));
+                        marker = gmap.addMarker(new MarkerOptions().position(latLng).title("Me").icon(BitmapDescriptorFactory
+                                .defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                        gmap.setMaxZoomPreference(7);
+                        gmap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                        gmap.animateCamera(CameraUpdateFactory.zoomTo(13.0f));
+
                     } else {
-                        marker = gmap.addMarker(new MarkerOptions().position(latLng));
-                        gmap.setMaxZoomPreference(20);
+                        marker = gmap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory
+                                .defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                        gmap.setMaxZoomPreference(7);
                         gmap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
                         gmap.animateCamera(CameraUpdateFactory.zoomTo(13.0f));
                     }
@@ -205,13 +216,28 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         if (!success) {
             Log.e("ll", "Style parsing failed.");
         }
-        if (markers != null) {
 
-            for (MarkerOptions marker : markers) {
 
-                googleMap.addMarker(marker);
+        ArrayList<MyLocations> locations =   loadJSONFromAsset();
+
+        for (MyLocations loc: locations) {
+
+            if(loc.getStatuts()==1){
+                LatLng latLng = new LatLng(loc.getAlt(), loc.getLongi());
+
+                marker = gmap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory
+                        .defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+
+            }else{
+                LatLng latLng = new LatLng(loc.getAlt(), loc.getLongi());
+
+                marker = gmap.addMarker(new MarkerOptions().position(latLng));
             }
+
         }
+
+
+
     }
 
     private String getDirectionsUrl(LatLng origin, LatLng dest) {
@@ -447,11 +473,13 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                         LatLng latLng = new LatLng(latitude, longitude);
                         if (marker != null) {
                             marker.remove();
-                            marker = gmap.addMarker(new MarkerOptions().position(latLng).title(result));
+                            marker = gmap.addMarker(new MarkerOptions().position(latLng).title(result).icon(BitmapDescriptorFactory
+                                    .defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
                             gmap.setMaxZoomPreference(20);
                             gmap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12.0f));
                         } else {
-                            marker = gmap.addMarker(new MarkerOptions().position(latLng).title(result));
+                            marker = gmap.addMarker(new MarkerOptions().position(latLng).title(result).icon(BitmapDescriptorFactory
+                                    .defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
                             gmap.setMaxZoomPreference(20);
                             gmap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 21.0f));
                         }
@@ -480,6 +508,46 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
         }
+    }
+
+
+
+    public ArrayList<MyLocations> loadJSONFromAsset() {
+        ArrayList<MyLocations> locList = new ArrayList<>();
+        String json = null;
+        try {
+            InputStream is = getActivity().getAssets().open("datas.json");
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            json = new String(buffer, "UTF-8");
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+        try {
+            JSONArray m_jArry = new JSONArray(json);
+
+
+            for (int i = 0; i < m_jArry.length(); i++) {
+                JSONObject jo_inside = m_jArry.getJSONObject(i);
+                MyLocations location = new MyLocations();
+                location.setAlt(jo_inside.getDouble("latitude"));
+                location.setLongi( jo_inside.getDouble("longitude"));
+                location.setStatuts(jo_inside.getInt("status"));
+                location.setId(jo_inside.getInt("ID"));
+
+
+                //Add your values in your `ArrayList` as below:
+                locList.add(location);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.e("loadJSONFromAsset", ""+locList);
+        return locList;
     }
 
 }
