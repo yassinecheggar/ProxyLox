@@ -44,6 +44,7 @@
             android:value="@integer/google_play_services_version" />
 
         <service android:name=".services.TopicSubscriber"/>
+        <service android:name=".services.TopicPublisher"/>
         <service android:name="org.eclipse.paho.android.service.MqttService" />
 
 

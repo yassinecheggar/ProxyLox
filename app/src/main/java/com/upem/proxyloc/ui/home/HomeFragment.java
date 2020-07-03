@@ -546,7 +546,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.e("loadJSONFromAsset", ""+locList);
+      //  Log.e("loadJSONFromAsset", ""+locList);
         return locList;
     }
 

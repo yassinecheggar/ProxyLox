@@ -1,5 +1,6 @@
 package com.upem.proxyloc.services;
 
+import android.util.Log;
 import android.widget.Toast;
 
 import java.util.Vector;
@@ -21,8 +22,7 @@ public class SimpleMqttCallBack implements MqttCallback {
 
 	public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
 		msg = new String(mqttMessage.getPayload());
-		Toast.makeText(topicSubscriber, "lolaaaa", Toast.LENGTH_SHORT).show();
-
+		Log.e("TAG", "messageArrived: "+ msg );
 	}
 	public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
 

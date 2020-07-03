@@ -36,4 +36,5 @@ dependencies {
     implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
     implementation 'com.uriio:beacons-android:1.5.2'
     implementation 'org.altbeacon:android-beacon-library:2+'
+    implementation 'com.google.android.gms:play-services-location:17.0.0'
 }

@@ -57,7 +57,7 @@ public class TopicSubscriber extends Service {
 
             @Override
             protected String doInBackground(Void... voids) {
-                new TopicSubscriber().run("tcp://mr2aqty0xnech1.messaging.solace.cloud:20966","solace-cloud-client","usa9boldpiapdjqr9b7gii14h");
+                Sub("tcp://mr2aqty0xnech1.messaging.solace.cloud:20966","solace-cloud-client","usa9boldpiapdjqr9b7gii14h");
 
                 return null;
             }
@@ -71,7 +71,7 @@ public class TopicSubscriber extends Service {
     }
 
 
-    public void run(String... args) {
+    public void Sub(String... args) {
         System.out.println("TopicSubscriber initializing...");
 
         String host = args[0];
@@ -92,35 +92,13 @@ public class TopicSubscriber extends Service {
             System.out.println("Connected");
 
             // Latch used for synchronizing b/w threads
-            final CountDownLatch latch = new CountDownLatch(1);
+
 
             // Topic filter the client will subscribe to
-            final String subTopic = "T/GettingStarted/pubsub";
+            final String subTopic = "test2";
 
             // Callback - Anonymous inner-class for receiving messages
-            mqttClient.setCallback(new MqttCallback() {
-
-                public void messageArrived(String topic, MqttMessage message) throws Exception {
-                    // Called when a message arrives from the server that
-                    // matches any subscription made by the client
-                    String time = new Timestamp(System.currentTimeMillis()).toString();
-                    System.out.println("\nReceived a Message!" +
-                            "\n\tTime:    " + time +
-                            "\n\tTopic:   " + topic +
-                            "\n\tMessage: " + new String(message.getPayload()) +
-                            "\n\tQoS:     " + message.getQos() + "\n");
-                    latch.countDown(); // unblock main thread
-                }
-
-                public void connectionLost(Throwable cause) {
-                    System.out.println("Connection to Solace messaging lost!" + cause.getMessage());
-                    latch.countDown();
-                }
-
-                public void deliveryComplete(IMqttDeliveryToken token) {
-                }
-
-            });
+            mqttClient.setCallback(new SimpleMqttCallBack());
 
             // Subscribe client to the topic filter and a QoS level of 0
             System.out.println("Subscribing client to topic: " + subTopic);
@@ -128,11 +106,6 @@ public class TopicSubscriber extends Service {
             System.out.println("Subscribed");
 
             // Wait for the message to be received
-            try {
-                latch.await(); // block here until message received, and latch will flip
-            } catch (InterruptedException e) {
-                System.out.println("I was awoken while waiting");
-            }
 
             // Disconnect the client
             //  mqttClient.disconnect();

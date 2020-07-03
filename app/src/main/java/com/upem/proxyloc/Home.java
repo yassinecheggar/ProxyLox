@@ -26,6 +26,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.navigation.NavigationView;
+import com.upem.proxyloc.services.TopicPublisher;
 import com.upem.proxyloc.services.TopicSubscriber;
 
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -92,7 +93,8 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
         NavigationUI.setupWithNavController(navigationView, navController);
         createNotificationChannel();
 
-        //startService(new Intent(getBaseContext(), TopicSubscriber.class));
+       startService(new Intent(getBaseContext(), TopicSubscriber.class));
+        startService(new Intent(getBaseContext(),  TopicPublisher.class));
 
     }
 
