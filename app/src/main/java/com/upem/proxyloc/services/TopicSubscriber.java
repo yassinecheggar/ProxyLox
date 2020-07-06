@@ -36,6 +36,12 @@ public class TopicSubscriber extends Service {
     private String passWord = "usa9boldpiapdjqr9b7gii14h";
     private String host=  "tcp://mr2aqty0xnech1.messaging.solace.cloud:20966";
     MqttAndroidClient mqttAndroidClient;
+    MqttClient mqttClient;
+    MqttConnectOptions connOpts;
+
+    public MqttClient getMqttClient() {
+        return mqttClient;
+    }
 
     final CountDownLatch latch = new CountDownLatch(1);
 
@@ -80,11 +86,12 @@ public class TopicSubscriber extends Service {
 
         try {
             MemoryPersistence persistence = new MemoryPersistence();
-            MqttClient mqttClient = new MqttClient(host, "HelloWorldSub",persistence);
-            MqttConnectOptions connOpts = new MqttConnectOptions();
+            mqttClient = new MqttClient(host, "HelloWorldSub",persistence);
+            connOpts = new MqttConnectOptions();
             connOpts.setCleanSession(true);
             connOpts.setUserName(username);
             connOpts.setPassword(password.toCharArray());
+            connOpts.setAutomaticReconnect(true);
 
             // Connect the client
             System.out.println("Connecting to Solace messaging at "+host);
@@ -98,7 +105,28 @@ public class TopicSubscriber extends Service {
             final String subTopic = "test2";
 
             // Callback - Anonymous inner-class for receiving messages
-            mqttClient.setCallback(new SimpleMqttCallBack());
+            mqttClient.setCallback(new MqttCallback() {
+                @Override
+                public void connectionLost(Throwable cause) {
+                    System.out.println("Connection to MQTT broker lost!" + cause);
+                    try {
+                        mqttClient.connect(connOpts);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void messageArrived(String topic, MqttMessage message) throws Exception {
+                    String msg = new String(message.getPayload());
+                    Log.e("TAG", "messageArrived: "+ msg );
+                }
+
+                @Override
+                public void deliveryComplete(IMqttDeliveryToken token) {
+
+                }
+            });
 
             // Subscribe client to the topic filter and a QoS level of 0
             System.out.println("Subscribing client to topic: " + subTopic);

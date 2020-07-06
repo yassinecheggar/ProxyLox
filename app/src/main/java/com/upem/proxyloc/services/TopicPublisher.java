@@ -1,44 +1,40 @@
 package com.upem.proxyloc.services;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.util.concurrent.Executor;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class TopicPublisher extends Service {
 
     private Location currentBestLocation = null;
-    private LocationManager mlocationManager = null;
-    private FusedLocationProviderClient fusedLocationClient;
+    private  DBHelper dbHelper;
+    private SQLiteDatabase database;
+
+    LocationManager mLocationManager ;
 
     public TopicPublisher() {
 
     }
-
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -49,6 +45,26 @@ public class TopicPublisher extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
+         dbHelper  =  new DBHelper(this);
+
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
+        scheduler.scheduleAtFixedRate
+                (new Runnable() {
+                    public void run() {
+                        checkifgpsEnable();
+                        try {
+                          Log.e("db size", "run: " +dbHelper.getAll().size() );
+
+                            dbHelper.insertLocation("ec:ef:sf:er","2.65","2.45","20-20-15");
+                        }catch (Exception e){}
+
+
+
+                    }
+                }, 0, 3, TimeUnit.SECONDS);
+
+/*
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... voids) {
@@ -62,6 +78,7 @@ public class TopicPublisher extends Service {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                /*
                 while (true) {
                     publish("tcp://mr2aqty0xnech1.messaging.solace.cloud:20966", "solace-cloud-client", "usa9boldpiapdjqr9b7gii14h",obj.toString() );
 
@@ -71,9 +88,11 @@ public class TopicPublisher extends Service {
                // getLastBestLocation();
 
 
+
+                return null;
             }
         }.execute();
-
+*/
         return START_STICKY;
     }
 
@@ -130,44 +149,40 @@ public class TopicPublisher extends Service {
 
     }
 
-    private void getLastBestLocation() {
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        Log.e("", "getLastBestLocation: " +fusedLocationClient.getLastLocation().getResult().toString());
-      //  fetchLastLocation();
-
-    }
-
-    private void fetchLastLocation() {
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    Activity#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for Activity#requestPermissions for more details.
-//                    Toast.makeText(MainActivity.this, "Permission not granted, Kindly allow permission", Toast.LENGTH_LONG).show();
-
-                return;
+    private Location getLastKnownLocation() {
+        mLocationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
+        List<String> providers = mLocationManager.getProviders(true);
+        Location bestLocation = null;
+        for (String provider : providers) {
+            @SuppressLint("MissingPermission") Location l = mLocationManager.getLastKnownLocation(provider);
+            if (l == null) {
+                continue;
+            }
+            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                // Found best last known location: %s", l);
+                bestLocation = l;
             }
         }
-        fusedLocationClient.getLastLocation().addOnSuccessListener((Executor) this, new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        // Got last known location. In some rare situations this can be null.
-                        if (location != null) {
-                            // Logic to handle location object
-                            Log.e("LAST LOCATION: ", location.toString());
-                        }
-                    }
-                });
-
+        return bestLocation;
     }
 
+    private void checkifgpsEnable() {
 
+        boolean gps_enabled = false;
+        boolean network_enabled = false;
+        mLocationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
+        try {
+            gps_enabled = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } catch(Exception ex) {}
+
+
+        if(!gps_enabled) {
+            Log.e("check", "checkifgpsEnable: nooooooooon " );
+        }else{
+            Location myloca =  getLastKnownLocation();
+            Log.e("location" , "latitude: " + myloca.getLatitude()+" longitiude :" +myloca.getLongitude() );
+        }
+    }
 
 
 }
