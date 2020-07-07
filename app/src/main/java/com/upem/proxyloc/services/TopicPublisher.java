@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -18,8 +20,14 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -53,46 +61,52 @@ public class TopicPublisher extends Service {
                 (new Runnable() {
                     public void run() {
                         checkifgpsEnable();
+                        Log.e("is connected", " internet " +isInternetAvailable() );
                         try {
                           Log.e("db size", "run: " +dbHelper.getAll().size() );
+                          // no internet
+                          if(isInternetAvailable()==false){
 
-                            dbHelper.insertLocation("ec:ef:sf:er","2.65","2.45","20-20-15");
-                        }catch (Exception e){}
+                              dbHelper.insertLocation("ec:ef:sf:er","2.65","2.45","20-20-15");
+
+                          }else { //with internet
+                              JSONObject obj = new JSONObject();
+                              try {
+                                  obj.put("mac","cv:5d:f4");
+                                  obj.put("altitude",currentBestLocation.getAltitude());
+                                  obj.put("longitude",currentBestLocation.getLongitude());
+                                  obj.put("date", Calendar.getInstance().getTime());
+                              } catch (JSONException e) {
+                                  e.printStackTrace();
+                              }
+
+                              publish("tcp://mr2aqty0xnech1.messaging.solace.cloud:20966", "solace-cloud-client", "usa9boldpiapdjqr9b7gii14h",obj.toString() );
+
+                              Vector<JSONObject> vec = dbHelper.getAll();
+                              if(vec.size()>0){
+
+                                  for (JSONObject ob:vec) {
+                                      publish("tcp://mr2aqty0xnech1.messaging.solace.cloud:20966", "solace-cloud-client", "usa9boldpiapdjqr9b7gii14h",ob.toString() );
+                                      Log.e("sent from  db", "sent " );
+                                  }
+                                  dbHelper.deleteall();
+                              }
+
+
+                          }
+
+                        }catch (Exception e){
+                            Log.e("error", "run: " + e.getMessage());
+                        }
 
 
 
                     }
-                }, 0, 3, TimeUnit.SECONDS);
-
-/*
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... voids) {
-
-                JSONObject obj = new JSONObject();
-                try {
-                    obj.put("mac","cv:5d:f4");
-                    obj.put("altitude","2.65658");
-                    obj.put("longitude","44.13545");
-                    obj.put("status","1");
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                /*
-                while (true) {
-                    publish("tcp://mr2aqty0xnech1.messaging.solace.cloud:20966", "solace-cloud-client", "usa9boldpiapdjqr9b7gii14h",obj.toString() );
-
-                }
-
-               // Log.e("loal", "doInBackground: " );
-               // getLastBestLocation();
+                }, 0, 60, TimeUnit.SECONDS);
 
 
 
-                return null;
-            }
-        }.execute();
-*/
+
         return START_STICKY;
     }
 
@@ -179,10 +193,21 @@ public class TopicPublisher extends Service {
         if(!gps_enabled) {
             Log.e("check", "checkifgpsEnable: nooooooooon " );
         }else{
-            Location myloca =  getLastKnownLocation();
-            Log.e("location" , "latitude: " + myloca.getLatitude()+" longitiude :" +myloca.getLongitude() );
+             currentBestLocation =  getLastKnownLocation();
+
         }
     }
+
+    public boolean isInternetAvailable() {
+        try {
+            InetAddress address = InetAddress.getByName("www.google.com");
+            return !address.equals("");
+        } catch (UnknownHostException e) {
+            // Log error
+        }
+        return false;
+    }
+
 
 
 }

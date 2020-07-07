@@ -1,14 +1,16 @@
 package com.upem.proxyloc.services;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
+import java.util.Vector;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteDatabase;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class DBHelper extends SQLiteOpenHelper {
 
@@ -78,8 +80,13 @@ public class DBHelper extends SQLiteOpenHelper {
                 new String[] { Integer.toString(id) });
     }
 
-    public ArrayList<String> getAll() {
-       ArrayList<String> array_list = new ArrayList<String>();
+    public void deleteall () {
+        SQLiteDatabase db = this.getWritableDatabase();
+          db.execSQL("DELETE FROM mylocation");
+    }
+
+    public Vector<JSONObject> getAll() {
+        Vector<JSONObject> array_list = new Vector<>();
 
         //hp = new HashMap();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -87,7 +94,16 @@ public class DBHelper extends SQLiteOpenHelper {
         res.moveToFirst();
 
         while(res.isAfterLast() == false){
-            array_list.add(res.getString(res.getColumnIndex("latitude")));
+            JSONObject obj = new JSONObject();
+            try {
+                obj.put("mac",res.getColumnIndex("mac"));
+                obj.put("altitude",res.getColumnIndex("latitude"));
+                obj.put("longitude",res.getColumnIndex("latitude"));
+                obj.put("date",res.getColumnIndex("date"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            array_list.add(obj);
             res.moveToNext();
         }
         return array_list;
