@@ -35,6 +35,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.upem.proxyloc.R;
 import com.upem.proxyloc.models.MyLocations;
+import com.upem.proxyloc.services.Global;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -49,6 +50,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
@@ -67,7 +71,6 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     Marker marker;
     LocationListener locationListener;
-
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -98,6 +101,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                 public void onLocationChanged(Location location) {
                     double latitude = location.getLatitude();
                     double longitude = location.getLongitude();
+                    update(gmap);
                     //get the location name from latitude and longitude
                     //Geocoder geocoder = new Geocoder(getContext());
                     // List<Address> addresses =
@@ -110,9 +114,9 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                         marker.remove();
                         marker = gmap.addMarker(new MarkerOptions().position(latLng).title("Me").icon(BitmapDescriptorFactory
                                 .defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
-                        gmap.setMaxZoomPreference(7);
-                        gmap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                        gmap.animateCamera(CameraUpdateFactory.zoomTo(13.0f));
+                        // gmap.setMaxZoomPreference(7);
+                        //gmap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                        //gmap.animateCamera(CameraUpdateFactory.zoomTo(13.0f));
 
                     } else {
                         marker = gmap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory
@@ -140,6 +144,20 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             };
             locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+
+            final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
+
+            Log.e("map", "onMapReady: " + Global.MarkerObjects.size());
+            final int Index = 0 ;
+            scheduler.scheduleAtFixedRate(new Runnable() {
+                public void run() {
+                    //if(Index!=Global.changes){
+                        update(gmap);
+                        Log.e("map", "Update" );
+                   // }
+                }
+            }, 0, 5, TimeUnit.SECONDS);
         }
 
         return root;
@@ -167,7 +185,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onStart() {
         super.onStart();
-      //  markers = HomeFragment.markers;
+        //  markers = HomeFragment.markers;
     }
 
     @Override
@@ -198,13 +216,13 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     public void onMapReady(final GoogleMap googleMap) {
         gmap = googleMap;
         mapView.onStart();
-        boolean success=false;
+        boolean success = false;
         try {
             // Customise the styling of the base map using a JSON object defined
             // in a raw resource file.
-             success = googleMap.setMapStyle(
+            success = googleMap.setMapStyle(
                     MapStyleOptions.loadRawResourceStyle(
-                            getContext(),R.raw.mapstyle));
+                            getContext(), R.raw.mapstyle));
 
             if (!success) {
                 Log.e("tab", "Style parsing failed.");
@@ -216,7 +234,26 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         if (!success) {
             Log.e("ll", "Style parsing failed.");
         }
+//-------------------------------------------------------------------------------------------------
 
+
+      /*   for (JSONObject loc : Global.MarkerObjects) {
+
+           try {
+                if (loc.getString("UsrStatus").equals("1")) {
+                    LatLng latLng = new LatLng(loc.getDouble("latitude"), loc.getDouble("longitude"));
+
+                    marker = gmap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory
+                            .defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+
+                } else {
+                    LatLng latLng = new LatLng(loc.getDouble("latitude"), loc.getDouble("longitude"));
+
+                    marker = gmap.addMarker(new MarkerOptions().position(latLng));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
         ArrayList<MyLocations> locations =   loadJSONFromAsset();
 
@@ -233,8 +270,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
                 marker = gmap.addMarker(new MarkerOptions().position(latLng));
             }
-
-        }
+*/
 
 
 
@@ -511,7 +547,6 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     }
 
 
-
     public ArrayList<MyLocations> loadJSONFromAsset() {
         ArrayList<MyLocations> locList = new ArrayList<>();
         String json = null;
@@ -535,7 +570,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                 JSONObject jo_inside = m_jArry.getJSONObject(i);
                 MyLocations location = new MyLocations();
                 location.setAlt(jo_inside.getDouble("latitude"));
-                location.setLongi( jo_inside.getDouble("longitude"));
+                location.setLongi(jo_inside.getDouble("longitude"));
                 location.setStatuts(jo_inside.getInt("status"));
                 location.setId(jo_inside.getInt("ID"));
 
@@ -546,8 +581,29 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-      //  Log.e("loadJSONFromAsset", ""+locList);
+        //  Log.e("loadJSONFromAsset", ""+locList);
         return locList;
+    }
+
+    public void update(final GoogleMap googleMap) {
+        for (JSONObject loc : Global.MarkerObjects) {
+
+            try {
+                if (loc.getString("UsrStatus").equals("1")) {
+                    LatLng latLng = new LatLng(loc.getDouble("latitude"), loc.getDouble("longitude"));
+
+                    marker = googleMap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory
+                            .defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+
+                } else {
+                    LatLng latLng = new LatLng(loc.getDouble("latitude"), loc.getDouble("longitude"));
+
+                    marker = googleMap.addMarker(new MarkerOptions().position(latLng));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }

@@ -6,14 +6,10 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
-
-import com.google.android.gms.location.FusedLocationProviderClient;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -25,6 +21,7 @@ import org.json.JSONObject;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Vector;
@@ -37,6 +34,8 @@ public class TopicPublisher extends Service {
     private Location currentBestLocation = null;
     private  DBHelper dbHelper;
     private SQLiteDatabase database;
+
+    public static final String DATE_FORMAT_2 = "yyyy-MM-dd HH:mm:ss";
 
     LocationManager mLocationManager ;
 
@@ -54,39 +53,44 @@ public class TopicPublisher extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
          dbHelper  =  new DBHelper(this);
-
+        final SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT_2);
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        final Pub pub = new Pub(getApplicationContext());
 
         scheduler.scheduleAtFixedRate
                 (new Runnable() {
                     public void run() {
-                        checkifgpsEnable();
+                        boolean Todo =  checkifgpsEnable();
+
                         Log.e("is connected", " internet " +isInternetAvailable() );
                         try {
                           Log.e("db size", "run: " +dbHelper.getAll().size() );
                           // no internet
-                          if(isInternetAvailable()==false){
+                          if(isInternetAvailable()==false) {
+                              if (Todo == true) {
+                                  dbHelper.insertLocation("ec:ef:sf:er",String.valueOf(currentBestLocation.getLatitude()), String.valueOf(currentBestLocation.getLongitude()), ""+ dateFormat.format(Calendar.getInstance().getTime()) );
+                              }
 
-                              dbHelper.insertLocation("ec:ef:sf:er","2.65","2.45","20-20-15");
 
                           }else { //with internet
                               JSONObject obj = new JSONObject();
                               try {
                                   obj.put("mac","cv:5d:f4");
-                                  obj.put("altitude",currentBestLocation.getAltitude());
-                                  obj.put("longitude",currentBestLocation.getLongitude());
-                                  obj.put("date", Calendar.getInstance().getTime());
+                                  obj.put("latitude", String.valueOf(currentBestLocation.getLatitude()));
+                                  obj.put("longitude",String.valueOf(currentBestLocation.getLongitude()));
+                                  obj.put("TimeColumn", dateFormat.format(Calendar.getInstance().getTime()));
+                                  obj.put("UsrStatus", "0");
                               } catch (JSONException e) {
                                   e.printStackTrace();
                               }
 
-                              publish("tcp://mr2aqty0xnech1.messaging.solace.cloud:20966", "solace-cloud-client", "usa9boldpiapdjqr9b7gii14h",obj.toString() );
+                              pub.publish("tcp://mr2aqty0xnech1.messaging.solace.cloud:20966", "solace-cloud-client", "usa9boldpiapdjqr9b7gii14h",obj.toString() );
 
                               Vector<JSONObject> vec = dbHelper.getAll();
                               if(vec.size()>0){
 
                                   for (JSONObject ob:vec) {
-                                      publish("tcp://mr2aqty0xnech1.messaging.solace.cloud:20966", "solace-cloud-client", "usa9boldpiapdjqr9b7gii14h",ob.toString() );
+                                      pub.publish("tcp://mr2aqty0xnech1.messaging.solace.cloud:20966", "solace-cloud-client", "usa9boldpiapdjqr9b7gii14h",ob.toString() );
                                       Log.e("sent from  db", "sent " );
                                   }
                                   dbHelper.deleteall();
@@ -99,10 +103,8 @@ public class TopicPublisher extends Service {
                             Log.e("error", "run: " + e.getMessage());
                         }
 
-
-
                     }
-                }, 0, 60, TimeUnit.SECONDS);
+                }, 0, 20, TimeUnit.SECONDS);
 
 
 
@@ -110,58 +112,6 @@ public class TopicPublisher extends Service {
         return START_STICKY;
     }
 
-    public void publish(String... args) {
-        System.out.println("TopicPublisher initializing...");
-
-        String host = args[0];
-        String username = args[1];
-        String password = args[2];
-        String msg = args[3];
-
-
-        try {
-            MemoryPersistence persistence = new MemoryPersistence();
-            // Create an Mqtt client
-            MqttClient mqttClient = new MqttClient(host, "HelloWorldPub", persistence);
-            MqttConnectOptions connOpts = new MqttConnectOptions();
-            connOpts.setCleanSession(true);
-            connOpts.setUserName(username);
-            connOpts.setPassword(password.toCharArray());
-
-            // Connect the client
-            System.out.println("Connecting to Solace messaging at " + host);
-            mqttClient.connect(connOpts);
-            System.out.println("Connected");
-
-            // Create a Mqtt message
-            String content = msg;
-            MqttMessage message = new MqttMessage(content.getBytes());
-            // Set the QoS on the Messages - 
-            // Here we are using QoS of 0 (equivalent to Direct Messaging in Solace)
-            message.setQos(0);
-
-            System.out.println("Publishing message: " + content);
-
-            // Publish the message
-            mqttClient.publish("test", message);
-
-            // Disconnect the client
-            mqttClient.disconnect();
-
-            System.out.println("Message published. Exiting");
-
-
-        } catch (MqttException me) {
-            System.out.println("reason " + me.getReasonCode());
-            System.out.println("msg " + me.getMessage());
-            System.out.println("loc " + me.getLocalizedMessage());
-            System.out.println("cause " + me.getCause());
-            System.out.println("excep " + me);
-            me.printStackTrace();
-        }
-
-
-    }
 
     private Location getLastKnownLocation() {
         mLocationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
@@ -177,25 +127,29 @@ public class TopicPublisher extends Service {
                 bestLocation = l;
             }
         }
+        Log.e("loc", "getLastKnownLocation: " +bestLocation.getLongitude() +" latitude" + bestLocation.getLatitude() );
         return bestLocation;
     }
 
-    private void checkifgpsEnable() {
+    private boolean  checkifgpsEnable() {
 
         boolean gps_enabled = false;
         boolean network_enabled = false;
         mLocationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
         try {
             gps_enabled = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+
         } catch(Exception ex) {}
 
 
         if(!gps_enabled) {
             Log.e("check", "checkifgpsEnable: nooooooooon " );
+            return false;
         }else{
              currentBestLocation =  getLastKnownLocation();
-
+            return true;
         }
+
     }
 
     public boolean isInternetAvailable() {

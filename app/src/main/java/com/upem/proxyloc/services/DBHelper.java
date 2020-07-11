@@ -18,10 +18,8 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String CONTACTS_TABLE_NAME = "mylocation";
 
 
-
-
     public DBHelper(Context context) {
-        super(context, DATABASE_NAME , null, 2);
+        super(context, DATABASE_NAME, null, 2);
     }
 
     @Override
@@ -37,7 +35,7 @@ public class DBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public boolean insertLocation ( String mac, String latitude, String longitude,String date) {
+    public boolean insertLocation(String mac, String latitude, String longitude, String date) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put("mac", mac);
@@ -51,17 +49,17 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public Cursor getData(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res =  db.rawQuery( "select * from contacts where id="+id+"", null );
+        Cursor res = db.rawQuery("select * from contacts where id=" + id + "", null);
         return res;
     }
 
-    public int numberOfRows(){
+    public int numberOfRows() {
         SQLiteDatabase db = this.getReadableDatabase();
         int numRows = (int) DatabaseUtils.queryNumEntries(db, CONTACTS_TABLE_NAME);
         return numRows;
     }
 
-    public boolean updateContact (Integer id, String name, String phone, String email, String street,String place) {
+    public boolean updateContact(Integer id, String name, String phone, String email, String street, String place) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put("name", name);
@@ -69,20 +67,20 @@ public class DBHelper extends SQLiteOpenHelper {
         contentValues.put("email", email);
         contentValues.put("street", street);
         contentValues.put("place", place);
-        db.update("contacts", contentValues, "id = ? ", new String[] { Integer.toString(id) } );
+        db.update("contacts", contentValues, "id = ? ", new String[]{Integer.toString(id)});
         return true;
     }
 
-    public Integer deleteContact (Integer id) {
+    public Integer deleteContact(Integer id) {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete("contacts",
                 "id = ? ",
-                new String[] { Integer.toString(id) });
+                new String[]{Integer.toString(id)});
     }
 
-    public void deleteall () {
+    public void deleteall() {
         SQLiteDatabase db = this.getWritableDatabase();
-          db.execSQL("DELETE FROM mylocation");
+        db.execSQL("DELETE FROM mylocation");
     }
 
     public Vector<JSONObject> getAll() {
@@ -90,16 +88,18 @@ public class DBHelper extends SQLiteOpenHelper {
 
         //hp = new HashMap();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res =  db.rawQuery( "select * from Mylocation", null );
+        Cursor res = db.rawQuery("select * from Mylocation", null);
         res.moveToFirst();
 
-        while(res.isAfterLast() == false){
+        while (res.isAfterLast() == false) {
             JSONObject obj = new JSONObject();
             try {
-                obj.put("mac",res.getColumnIndex("mac"));
-                obj.put("altitude",res.getColumnIndex("latitude"));
-                obj.put("longitude",res.getColumnIndex("latitude"));
-                obj.put("date",res.getColumnIndex("date"));
+                obj.put("mac", res.getString(res.getColumnIndex("mac")));
+                obj.put("latitude", res.getString(res.getColumnIndex("latitude")));
+                obj.put("longitude", res.getString(res.getColumnIndex("longitude")));
+                obj.put("TimeColumn", res.getString(res.getColumnIndex("date")));
+                obj.put("UsrStatus", "0");
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }
