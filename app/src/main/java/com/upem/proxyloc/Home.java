@@ -15,11 +15,15 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import android.os.RemoteException;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -28,6 +32,8 @@ import androidx.navigation.ui.NavigationUI;
 import com.google.android.material.navigation.NavigationView;
 import com.upem.proxyloc.services.TopicPublisher;
 import com.upem.proxyloc.services.TopicSubscriber;
+import com.upem.proxyloc.ui.gallery.GalleryFragment;
+import com.upem.proxyloc.ui.home.HomeFragment;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -35,6 +41,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.view.Menu;
+import android.widget.Toast;
 
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
@@ -46,6 +53,7 @@ import org.altbeacon.beacon.Region;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 public class Home extends AppCompatActivity implements BeaconConsumer {
 
@@ -65,20 +73,20 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
         getSupportActionBar().hide();
 
 
-        FloatingActionButton fab = findViewById(R.id.fab);
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+
+       // fab.setOnClickListener(new View.OnClickListener() {
+          //  @Override
+          //  public void onClick(View view) {
             /*    Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();*/
 
              /*   Intent i = new Intent(getBaseContext(), MainActivity.class);
                 startActivity(i);*/
-                dostuf();
-                dostuf2();
-            }
-        });
+               // dostuf();
+              //  dostuf2();
+          //  }
+       // });
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
@@ -91,6 +99,41 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+
+        navigationView.bringToFront();
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+
+                switch (menuItem.getItemId()){
+
+                    case R.id.nav_home:
+
+                      /*  Fragment fragmentA = getSupportFragmentManager().findFragmentById(R.id.nav_home);
+                        if (fragmentA == null) {
+                            Log.e("messsaage", "not found " );                        } else {
+                            //Log.e("messsaage", "onNavigationItemSelected: eexist " );
+                        }*/
+                        HomeFragment homeFragment= new HomeFragment();
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(getVisibleFragment().getId(), homeFragment, "findThisFragment")
+                                .addToBackStack(null)
+                                .commit();
+                        break;
+
+                    case R.id.nav_gallery:
+                        GalleryFragment galleryFragment= new GalleryFragment();
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(getVisibleFragment().getId(), galleryFragment, "findThisFragment")
+                                .addToBackStack(null)
+                                .commit();
+                        Log.e("gall", "onNavigationItemSelected: "+ getVisibleFragment().getId() +" :"+ R.id.nav_host_fragment );
+                        break;
+                }
+                return false;
+            }
+        });
+
         createNotificationChannel();
 
        startService(new Intent(getBaseContext(), TopicSubscriber.class));
@@ -234,5 +277,18 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
+    }
+
+    public Fragment getVisibleFragment(){
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        List<Fragment> fragments = fragmentManager.getFragments();
+        if(fragments != null){
+            Log.e(TAG, "getVisibleFragment: "+ fragments.size() );
+            for(Fragment fragment : fragments){
+                if(fragment != null && fragment.isVisible())
+                    return fragment;
+            }
+        }
+        return null;
     }
 }

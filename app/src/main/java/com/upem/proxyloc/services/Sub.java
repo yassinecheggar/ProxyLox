@@ -82,7 +82,7 @@ public class Sub {
 
             // Subscribe client to the topic filter and a QoS level of 0
             System.out.println("Subscribing client to topic: " + subTopic);
-            mqttClient.subscribe(subTopic, 0);
+            mqttClient.subscribe(subTopic, 1);
             System.out.println("Subscribed");
 
             // Wait for the message to be received

@@ -13,6 +13,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,6 +52,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -72,6 +76,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     Marker marker;
     LocationListener locationListener;
 
+    private int temp ;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -101,7 +106,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                 public void onLocationChanged(Location location) {
                     double latitude = location.getLatitude();
                     double longitude = location.getLongitude();
-                    update(gmap);
+
                     //get the location name from latitude and longitude
                     //Geocoder geocoder = new Geocoder(getContext());
                     // List<Address> addresses =
@@ -110,6 +115,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                     //result += addresses.get(0).getCountryName();
                     LatLng latLng = new LatLng(latitude, longitude);
                     Cor = latLng;
+
                     if (marker != null) {
                         marker.remove();
                         marker = gmap.addMarker(new MarkerOptions().position(latLng).title("Me").icon(BitmapDescriptorFactory
@@ -145,20 +151,10 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
 
-            final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
-
-            Log.e("map", "onMapReady: " + Global.MarkerObjects.size());
-            final int Index = 0 ;
-            scheduler.scheduleAtFixedRate(new Runnable() {
-                public void run() {
-                    //if(Index!=Global.changes){
-                        update(gmap);
-                        Log.e("map", "Update" );
-                   // }
-                }
-            }, 0, 5, TimeUnit.SECONDS);
         }
+
+
 
         return root;
     }
@@ -234,6 +230,25 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         if (!success) {
             Log.e("ll", "Style parsing failed.");
         }
+
+temp=0;
+       Timer myTimer = new Timer();
+        myTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                // If you want to modify a view in your Activity
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.e("received", "size "+Global.MarkerObjects.size() );
+                        if(temp<Global.changes){
+                        update(gmap);
+                        Log.e("map", "Update" );}
+                    }
+                })
+               ;
+            }
+        }, 2000, 1000);
 //-------------------------------------------------------------------------------------------------
 
 
