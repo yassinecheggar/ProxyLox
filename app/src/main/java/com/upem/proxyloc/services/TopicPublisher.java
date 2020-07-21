@@ -2,6 +2,7 @@ package com.upem.proxyloc.services;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
@@ -16,15 +17,19 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +39,8 @@ public class TopicPublisher extends Service {
     private Location currentBestLocation = null;
     private  DBHelper dbHelper;
     private SQLiteDatabase database;
+    private   Post post;
+    private JSONArray myJsonArray = null;
 
     public static final String DATE_FORMAT_2 = "yyyy-MM-dd HH:mm:ss";
 
@@ -56,55 +63,65 @@ public class TopicPublisher extends Service {
         final SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT_2);
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         final Pub pub = new Pub(getApplicationContext());
+        post = new Post();
 
+       // Global.mac = getBluetoothMacAddress();
+//------------------------------------------------------------
+
+//------------------------------------------------------------
         scheduler.scheduleAtFixedRate
                 (new Runnable() {
                     public void run() {
                         boolean Todo =  checkifgpsEnable();
 
                         Log.e("is connected", " internet " +isInternetAvailable() );
-                        try {
-                          Log.e("db size", "run: " +dbHelper.getAll().size() );
-                          // no internet
-                          if(isInternetAvailable()==false) {
-                              if (Todo == true) {
-                                  dbHelper.insertLocation("ec:ef:sf:er",String.valueOf(currentBestLocation.getLatitude()), String.valueOf(currentBestLocation.getLongitude()), ""+ dateFormat.format(Calendar.getInstance().getTime()) );
-                              }
+                        if(currentBestLocation!=null) {
+                            try {
+                                Log.e("db size", "run: " + dbHelper.getAll().length());
+                                // no internet
+                                if (isInternetAvailable() == false) {
+                                    if (Todo == true) {
+                                        dbHelper.insertLocation(Global.mac, String.valueOf(currentBestLocation.getLatitude()), String.valueOf(currentBestLocation.getLongitude()), "" + dateFormat.format(Calendar.getInstance().getTime()));
+                                    }
 
 
-                          }else { //with internet
-                              JSONObject obj = new JSONObject();
-                              try {
-                                  obj.put("mac","cv:5d:f4");
-                                  obj.put("latitude", String.valueOf(currentBestLocation.getLatitude()));
-                                  obj.put("longitude",String.valueOf(currentBestLocation.getLongitude()));
-                                  obj.put("TimeColumn", dateFormat.format(Calendar.getInstance().getTime()));
-                                  obj.put("UsrStatus", "0");
-                              } catch (JSONException e) {
-                                  e.printStackTrace();
-                              }
+                                } else { //with internet
+                                    JSONObject obj = new JSONObject();
+                                    try {
+                                        obj.put("mac", Global.mac);
+                                        obj.put("latitude", String.valueOf(currentBestLocation.getLatitude()));
+                                        obj.put("longitude", String.valueOf(currentBestLocation.getLongitude()));
+                                        obj.put("TimeColumn", dateFormat.format(Calendar.getInstance().getTime()));
+                                        obj.put("UsrStatus", Global.Userstauts);
+                                        pub.publish( obj.toString());
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
 
-                              pub.publish("tcp://mr2aqty0xnech1.messaging.solace.cloud:20966", "solace-cloud-client", "usa9boldpiapdjqr9b7gii14h",obj.toString() );
+                                    // Vector<JSONObject> vec = dbHelper.getAll();
 
-                              Vector<JSONObject> vec = dbHelper.getAll();
-                              if(vec.size()>0){
+                                }
 
-                                  for (JSONObject ob:vec) {
-                                      pub.publish("tcp://mr2aqty0xnech1.messaging.solace.cloud:20966", "solace-cloud-client", "usa9boldpiapdjqr9b7gii14h",ob.toString() );
-                                      Log.e("sent from  db", "sent " );
-                                  }
-                                  dbHelper.deleteall();
-                              }
-
-
-                          }
-
-                        }catch (Exception e){
-                            Log.e("error", "run: " + e.getMessage());
+                            } catch (Exception e) {
+                                Log.e("error", "run: " + e.getMessage());
+                            }
                         }
 
+                         myJsonArray = dbHelper.getAll();
+
+                        if (myJsonArray.length() > 0) {
+                            Log.e("pots data base", " size " + myJsonArray.length());
+                            try {
+                                Log.e("send data", " send  =  " +  SenData(myJsonArray) );;
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
                     }
-                }, 0, 20, TimeUnit.SECONDS);
+                }, 0, 10, TimeUnit.SECONDS);
 
 
 
@@ -162,6 +179,40 @@ public class TopicPublisher extends Service {
         return false;
     }
 
+
+    private String getBluetoothMacAddress() {
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        String bluetoothMacAddress = "";
+        try {
+            Field mServiceField = bluetoothAdapter.getClass().getDeclaredField("mService");
+            mServiceField.setAccessible(true);
+
+            Object btManagerService = mServiceField.get(bluetoothAdapter);
+
+            if (btManagerService != null) {
+                bluetoothMacAddress = (String) btManagerService.getClass().getMethod("getAddress").invoke(btManagerService);
+            }
+        } catch (NoSuchFieldException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ignore) {
+
+        }
+        Log.e("ff", "getBluetoothMacAddress: " + bluetoothMacAddress );
+        return bluetoothMacAddress;
+    }
+
+
+    public  synchronized boolean SenData(JSONArray jsonArray) throws ExecutionException, InterruptedException {
+
+
+            String  rep =  post.sendshit("http://yassi-0b243671.localhost.run/api/user/testPost", jsonArray)    ;
+            if(rep.equals("succes")){
+               //dbHelper.deleteall();
+                Log.e("post data top", "data sent succesfully "  );
+                return true;
+            }
+
+            return false ;
+
+    }
 
 
 }

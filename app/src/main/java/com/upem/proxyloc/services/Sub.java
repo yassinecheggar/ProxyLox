@@ -29,21 +29,21 @@ public class Sub {
         System.out.println("TopicSubscriber initializing...");
 
         String host = context.getResources().getString(R.string.mqtt_host);
-        String username = context.getResources().getString(R.string.mqtt_user);
-        String password = context.getResources().getString(R.string.mqtt_pass);
+       // String username = context.getResources().getString(R.string.mqtt_user);
+        //String password = context.getResources().getString(R.string.mqtt_pass);
 
         try {
             MemoryPersistence persistence = new MemoryPersistence();
-            mqttClient = new MqttClient(host, "HelloWorldSub", persistence);
-            connOpts = new MqttConnectOptions();
+            mqttClient = new MqttClient(host, MqttClient.generateClientId(), persistence);
+        /*    connOpts = new MqttConnectOptions();
             connOpts.setCleanSession(true);
             connOpts.setUserName(username);
             connOpts.setPassword(password.toCharArray());
-            connOpts.setAutomaticReconnect(true);
+            connOpts.setAutomaticReconnect(true);*/
 
             // Connect the client
             System.out.println("Connecting to Solace messaging at " + host);
-            mqttClient.connect(connOpts);
+            mqttClient.connect();
             System.out.println("Connected");
 
             // Latch used for synchronizing b/w threads
@@ -69,8 +69,8 @@ public class Sub {
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     String msg = new String(message.getPayload());
                     JSONObject obj = new JSONObject(msg);
-                    Global.MarkerObjects.add(obj);
-                    Global.changes =Global.changes+1 ;
+                   // Global.MarkerObjects.add(obj);
+                    //Global.changes =Global.changes+1 ;
                     Log.e("TAG", "messageArrived: " + msg);
                 }
 

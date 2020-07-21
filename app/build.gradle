@@ -31,10 +31,11 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
-    implementation 'com.google.android.gms:play-services-maps:16.0.0'
+    implementation 'com.google.android.gms:play-services-maps:17.0.0'
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
     implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
     implementation 'com.uriio:beacons-android:1.5.2'
     implementation 'org.altbeacon:android-beacon-library:2+'
     implementation 'com.google.android.gms:play-services-location:17.0.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.9.1'
 }

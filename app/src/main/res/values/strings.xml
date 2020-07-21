@@ -18,7 +18,7 @@
     <string name="style_json"></string>
     <string name="channel_name">ProxyLoc</string>
 
-    <string name="mqtt_host">tcp://mr2aqty0xnech1.messaging.solace.cloud:20966</string>
+    <string name="mqtt_host">tcp://broker.mqttdashboard.com:1883</string>
     <string name="mqtt_pass">usa9boldpiapdjqr9b7gii14h</string>
     <string name="mqtt_user">solace-cloud-client</string>
 

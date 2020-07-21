@@ -1,10 +1,13 @@
 package com.upem.proxyloc;
 
 import android.Manifest;
+import android.app.ActivityManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseSettings;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -14,26 +17,32 @@ import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import android.os.RemoteException;
+import android.provider.Settings;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.navigation.NavigationView;
+import com.upem.proxyloc.services.Global;
 import com.upem.proxyloc.services.TopicPublisher;
 import com.upem.proxyloc.services.TopicSubscriber;
 import com.upem.proxyloc.ui.gallery.GalleryFragment;
 import com.upem.proxyloc.ui.home.HomeFragment;
+import com.upem.proxyloc.ui.mode.ModeFragment;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -51,11 +60,13 @@ import org.altbeacon.beacon.BeaconTransmitter;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-public class Home extends AppCompatActivity implements BeaconConsumer {
+public class Home extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
     protected static final String TAG = "MonitoringActivity";
@@ -71,24 +82,16 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().hide();
+        getSupportFragmentManager().popBackStackImmediate();
 
 
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (!mBluetoothAdapter.isEnabled()) {
+            mBluetoothAdapter.enable();
+        }
 
-
-       // fab.setOnClickListener(new View.OnClickListener() {
-          //  @Override
-          //  public void onClick(View view) {
-            /*    Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();*/
-
-             /*   Intent i = new Intent(getBaseContext(), MainActivity.class);
-                startActivity(i);*/
-               // dostuf();
-              //  dostuf2();
-          //  }
-       // });
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
+        final DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        final NavigationView navigationView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
@@ -105,7 +108,7 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 
-                switch (menuItem.getItemId()){
+                switch (menuItem.getItemId()) {
 
                     case R.id.nav_home:
 
@@ -114,20 +117,32 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
                             Log.e("messsaage", "not found " );                        } else {
                             //Log.e("messsaage", "onNavigationItemSelected: eexist " );
                         }*/
-                        HomeFragment homeFragment= new HomeFragment();
+                        HomeFragment homeFragment = new HomeFragment();
                         getSupportFragmentManager().beginTransaction()
-                                .replace(getVisibleFragment().getId(), homeFragment, "findThisFragment")
+                                .replace(getVisibleFragment().getId(), homeFragment, "HomeFragment")
                                 .addToBackStack(null)
                                 .commit();
+                        drawer.closeDrawers();
                         break;
 
                     case R.id.nav_gallery:
-                        GalleryFragment galleryFragment= new GalleryFragment();
+                        GalleryFragment galleryFragment = new GalleryFragment();
                         getSupportFragmentManager().beginTransaction()
-                                .replace(getVisibleFragment().getId(), galleryFragment, "findThisFragment")
+                                .replace(getVisibleFragment().getId(), galleryFragment, "SettingsFragment")
                                 .addToBackStack(null)
                                 .commit();
-                        Log.e("gall", "onNavigationItemSelected: "+ getVisibleFragment().getId() +" :"+ R.id.nav_host_fragment );
+                        Log.e("gall", "onNavigationItemSelected: " + getVisibleFragment().getId() + " :" + R.id.nav_host_fragment);
+                        drawer.closeDrawers();
+                        break;
+
+
+                    case R.id.nav_manuel:
+                        ModeFragment modeFragment = new ModeFragment();
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(getVisibleFragment().getId(), modeFragment, "SettingsFragment")
+                                .addToBackStack(null)
+                                .commit();
+                        drawer.closeDrawers();
                         break;
                 }
                 return false;
@@ -136,8 +151,36 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
 
         createNotificationChannel();
 
-       startService(new Intent(getBaseContext(), TopicSubscriber.class));
-        startService(new Intent(getBaseContext(),  TopicPublisher.class));
+
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+            this.startForegroundService(new Intent(this,  TopicSubscriber.class));
+            this.startForegroundService(new Intent(this,  TopicPublisher.class));
+
+        } else {
+            this.startService(new Intent(this, TopicSubscriber.class));
+            this.startService(new Intent(this, TopicPublisher.class));
+        }
+
+//        this.startService(new Intent(this, TopicSubscriber.class));
+       // this.startService(new Intent(this, TopicPublisher.class));
+        //   startService(new Intent(getBaseContext(), TopicSubscriber.class));
+        // startService(new Intent(getBaseContext(),  TopicPublisher.class));
+        //********************************
+
+
+        //**************************************
+
+
+        HomeFragment homeFragment = new HomeFragment();
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.nav_host_fragment, homeFragment, "HomeFragment")
+                .addToBackStack(null)
+
+                .commit();
+
+         Global.mac = getDeviceIMEI();
+        Log.e("id", "divice Id"+ getDeviceIMEI() );
 
     }
 
@@ -153,87 +196,6 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
-    }
-
-
-    public void dostuf() {
-
-        final String TAG = "BLE";
-        Beacon beacon = new Beacon.Builder()
-                .setId1("2f234454-cf6d-4a0f-adf2-f4911ba9ffa6")
-                .setId2("1")
-                .setId3("2")
-                .setManufacturer(0x0118) // Radius Networks.  Change this for other beacon layouts
-                .setTxPower(-59)
-                .setBluetoothAddress("12")
-                .setDataFields(Arrays.asList(new Long[]{3l})) // Remove this for beacon layouts without d: fields
-                .build();
-
-        BeaconParser beaconParser = new BeaconParser()
-                .setBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25");
-        BeaconTransmitter beaconTransmitter = new BeaconTransmitter(getApplicationContext(), beaconParser);
-        beaconTransmitter.startAdvertising(beacon, new AdvertiseCallback() {
-
-            @Override
-            public void onStartFailure(int errorCode) {
-                Log.e(TAG, "Advertisement start failed with code: " + errorCode);
-            }
-
-            @Override
-            public void onStartSuccess(AdvertiseSettings settingsInEffect) {
-                Log.i(TAG, "Advertisement start succeeded.");
-            }
-        });
-
-    }
-
-    public void dostuf2() {
-        if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(
-                    new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION},
-                    REQUEST_ENABLE_LOCATION);
-        } else {
-            beaconManager = BeaconManager.getInstanceForApplication(this);
-            // To detect proprietary beacons, you must add a line like below corresponding to your beacon
-            // type.  Do a web search for "setBeaconLayout" to get the proper expression.
-            // beaconManager.getBeaconParsers().add(new BeaconParser().
-            // setBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25"));
-            beaconManager.bind(this);
-        }
-    }
-
-    @Override
-    public void onBeaconServiceConnect() {
-        beaconManager.removeAllMonitorNotifiers();
-
-        beaconManager.addRangeNotifier(new RangeNotifier() {
-            @Override
-            public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
-                if (beacons.size() > 0) {
-                    Log.i(TAG, "The first beacon I see is about " + beacons.iterator().next().getDistance() + " meters away." + beacons.size());
-                    NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), "lemubitA")
-                            .setSmallIcon(R.drawable.ic_warning_black_24dp)
-                            .setContentTitle("Warning")
-                            .setContentText(" Device found near you ")
-                            .setPriority(NotificationCompat.PRIORITY_MAX);
-
-                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
-
-                    // notificationId is a unique int for each notification that you must define
-                    if (Ntfcount < beacons.size()) {
-                        notificationManager.notify(100, builder.build());
-                        Ntfcount++;
-                    }
-                }
-            }
-        });
-
-        try {
-            beaconManager.startRangingBeaconsInRegion(new Region("12", null, null, null));
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
     }
 
 
@@ -257,8 +219,12 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
                     });
                     builder.show();
                 }
+
+
                 return;
             }
+
+
         }
 
     }
@@ -279,16 +245,62 @@ public class Home extends AppCompatActivity implements BeaconConsumer {
         }
     }
 
-    public Fragment getVisibleFragment(){
+    public Fragment getVisibleFragment() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         List<Fragment> fragments = fragmentManager.getFragments();
-        if(fragments != null){
-            Log.e(TAG, "getVisibleFragment: "+ fragments.size() );
-            for(Fragment fragment : fragments){
-                if(fragment != null && fragment.isVisible())
+        if (fragments != null) {
+            Log.e(TAG, "getVisibleFragment: " + fragments.size());
+            for (Fragment fragment : fragments) {
+                if (fragment != null && fragment.isVisible())
                     return fragment;
             }
         }
         return null;
     }
+
+
+    private String getBluetoothMacAddress() {
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        String bluetoothMacAddress = "";
+        try {
+            Field mServiceField = bluetoothAdapter.getClass().getDeclaredField("mService");
+            mServiceField.setAccessible(true);
+
+            Object btManagerService = mServiceField.get(bluetoothAdapter);
+
+            if (btManagerService != null) {
+                bluetoothMacAddress = (String) btManagerService.getClass().getMethod("getAddress").invoke(btManagerService);
+            }
+        } catch (NoSuchFieldException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ignore) {
+
+        }
+        Log.e("ff", "getBluetoothMacAddress: " + bluetoothMacAddress);
+        return bluetoothMacAddress;
+    }
+
+    public String getDeviceIMEI() {
+        String deviceUniqueIdentifier = null;
+        TelephonyManager tm = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
+        if (null != tm) {
+            if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    Activity#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for Activity#requestPermissions for more details.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_PHONE_STATE},
+                        2);
+            }else{
+            deviceUniqueIdentifier = tm.getDeviceId();}
+        }
+        if (null == deviceUniqueIdentifier || 0 == deviceUniqueIdentifier.length()) {
+            deviceUniqueIdentifier = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
+        }
+        return deviceUniqueIdentifier;
+    }
+
+
 }

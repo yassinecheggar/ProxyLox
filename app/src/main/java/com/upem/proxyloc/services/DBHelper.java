@@ -9,6 +9,7 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteDatabase;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -83,9 +84,9 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("DELETE FROM mylocation");
     }
 
-    public Vector<JSONObject> getAll() {
-        Vector<JSONObject> array_list = new Vector<>();
+    public JSONArray getAll() {
 
+        JSONArray array_list = new JSONArray();
         //hp = new HashMap();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor res = db.rawQuery("select * from Mylocation", null);
@@ -103,7 +104,7 @@ public class DBHelper extends SQLiteOpenHelper {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            array_list.add(obj);
+            array_list.put(obj);
             res.moveToNext();
         }
         return array_list;

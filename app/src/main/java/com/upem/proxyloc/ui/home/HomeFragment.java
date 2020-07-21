@@ -13,13 +13,10 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -54,9 +51,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Vector;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 
 public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
@@ -76,7 +77,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     Marker marker;
     LocationListener locationListener;
 
-    private int temp ;
+    private int temp;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -155,7 +156,6 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         }
 
 
-
         return root;
     }
 
@@ -231,7 +231,25 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             Log.e("ll", "Style parsing failed.");
         }
 
-temp=0;
+        getMarkers markers = new getMarkers();
+        JSONArray jsonArray = null;
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
+
+        try {
+            jsonArray = markers.execute("http://0.tcp.ngrok.io:11377/jstst").get();
+
+            if (jsonArray != null) {
+                update(gmap, jsonArray);
+            }
+
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+/*
+        temp=0;
        Timer myTimer = new Timer();
         myTimer.schedule(new TimerTask() {
             @Override
@@ -243,12 +261,13 @@ temp=0;
                         Log.e("received", "size "+Global.MarkerObjects.size() );
                         if(temp<Global.changes){
                         update(gmap);
+                        temp=Global.changes;
                         Log.e("map", "Update" );}
                     }
                 })
                ;
             }
-        }, 2000, 1000);
+        }, 6000, 2000);*/
 //-------------------------------------------------------------------------------------------------
 
 
@@ -286,7 +305,6 @@ temp=0;
                 marker = gmap.addMarker(new MarkerOptions().position(latLng));
             }
 */
-
 
 
     }
@@ -600,25 +618,62 @@ temp=0;
         return locList;
     }
 
-    public void update(final GoogleMap googleMap) {
-        for (JSONObject loc : Global.MarkerObjects) {
+    public void update(final GoogleMap googleMap, JSONArray jsonArray) {
 
+        for (int i = 0; i < jsonArray.length(); i++) {
             try {
-                if (loc.getString("UsrStatus").equals("1")) {
-                    LatLng latLng = new LatLng(loc.getDouble("latitude"), loc.getDouble("longitude"));
+                JSONObject loc = jsonArray.getJSONObject(i);
+                if (loc != null) {
+                    if (loc.getString("UsrStatus").equals("1")) {
+                        LatLng latLng = new LatLng(loc.getDouble("latitude"), loc.getDouble("longitude"));
 
-                    marker = googleMap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory
-                            .defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+                        marker = googleMap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory
+                                .defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
 
-                } else {
-                    LatLng latLng = new LatLng(loc.getDouble("latitude"), loc.getDouble("longitude"));
+                    } else {
+                        LatLng latLng = new LatLng(loc.getDouble("latitude"), loc.getDouble("longitude"));
 
-                    marker = googleMap.addMarker(new MarkerOptions().position(latLng));
+                        marker = googleMap.addMarker(new MarkerOptions().position(latLng));
+                    }
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
     }
+
+
+    // get  json  data  from  server
+
+    private class getMarkers extends AsyncTask<Object, Void, JSONArray> {
+
+        @Override
+        protected JSONArray doInBackground(Object... Object) {
+
+
+            OkHttpClient client = new OkHttpClient();
+
+            String url = Object[0].toString();
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0")
+                    .build();
+
+            try {
+                final String myResponse = client.newCall(request).execute().body().string();
+
+                JSONArray jsonArray = new JSONArray(myResponse);
+
+                return jsonArray;
+            } catch (JSONException | IOException x) {
+                Log.e("getMarkersHTTP", x.getMessage());
+                System.out.println(x.getMessage());
+            }
+
+            return null;
+        }
+    }
+
 
 }

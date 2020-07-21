@@ -16,6 +16,13 @@
 
             />
 
+        <item
+            android:id="@+id/nav_manuel"
+
+            android:title="Mode RGPD"
+
+            />
+
     </group>
 
 

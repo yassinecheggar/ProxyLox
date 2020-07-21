@@ -12,6 +12,8 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.upem.proxyloc.R;
+
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -34,24 +36,23 @@ public class Pub {
     public void publish(String... args) {
         System.out.println("TopicPublisher initializing...");
 
-        String host = args[0];
-        String username = args[1];
-        String password = args[2];
-        String msg = args[3];
+        String host = context.getResources().getString(R.string.mqtt_host);
+
+        String msg = args[0];
 
 
         try {
             MemoryPersistence persistence = new MemoryPersistence();
             // Create an Mqtt client
-            MqttClient mqttClient = new MqttClient(host, "HelloWorldPub", persistence);
-            MqttConnectOptions connOpts = new MqttConnectOptions();
-            connOpts.setCleanSession(true);
-            connOpts.setUserName(username);
-            connOpts.setPassword(password.toCharArray());
+            MqttClient mqttClient = new MqttClient(host, MqttClient.generateClientId(), persistence);
+            //MqttConnectOptions connOpts = new MqttConnectOptions();
+           // connOpts.setCleanSession(true);
+           // connOpts.setUserName(username);
+           // connOpts.setPassword(password.toCharArray());
 
             // Connect the client
             System.out.println("Connecting to Solace messaging at " + host);
-            mqttClient.connect(connOpts);
+            mqttClient.connect();
             System.out.println("Connected");
 
             // Create a Mqtt message
@@ -64,7 +65,7 @@ public class Pub {
             System.out.println("Publishing message: " + content);
 
             // Publish the message
-            mqttClient.publish("test", message);
+            mqttClient.publish("proxylox/in/coords", message);
 
             // Disconnect the client
             mqttClient.disconnect();
