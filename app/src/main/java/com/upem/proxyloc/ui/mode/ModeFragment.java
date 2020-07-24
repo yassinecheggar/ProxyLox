@@ -32,6 +32,8 @@ private Switch aSwitch;
         final View root = inflater.inflate(R.layout.fragment_send, container, false);
 
          aSwitch = root.findViewById(R.id.switchmode);
+        final Intent ble  = new Intent(getActivity(), BLE.class);
+
          if(isMyServiceRunning(BLE.class)==true){aSwitch.setChecked(true);}
 
         aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -43,9 +45,12 @@ private Switch aSwitch;
                 getActivity().startService(new Intent(getActivity(),BLE.class));
                     Log.e("start ble", "onCheckedChanged: ");
                 }else if(((isMyServiceRunning(BLE.class)==true)&& aSwitch.isChecked()==false)){
+
                     getActivity().stopService(new Intent(getActivity(), BLE.class));
                     Log.e("Stop ble", "onCheckedChanged: ");
                 }
+
+
 
             }
         })

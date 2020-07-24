@@ -152,15 +152,26 @@ public class Home extends AppCompatActivity {
         createNotificationChannel();
 
 
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
-            this.startForegroundService(new Intent(this,  TopicSubscriber.class));
-            this.startForegroundService(new Intent(this,  TopicPublisher.class));
+        Intent serviceIntent = new Intent(Home.this,TopicSubscriber.class);
+        Intent serviceIntent1 = new Intent(Home.this,TopicPublisher.class);
+        if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.O) {
+            Home.this.startForegroundService(serviceIntent);
+            Home.this.startForegroundService(serviceIntent1);
+        } else {
+            startService(serviceIntent);
+            startService(serviceIntent1);
+        }
+
+      /*  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            startForegroundService(new Intent(this,  TopicSubscriber.class));
+            startForegroundService(new Intent(this,  TopicPublisher.class));
 
         } else {
             this.startService(new Intent(this, TopicSubscriber.class));
             this.startService(new Intent(this, TopicPublisher.class));
         }
-
+*/
 //        this.startService(new Intent(this, TopicSubscriber.class));
        // this.startService(new Intent(this, TopicPublisher.class));
         //   startService(new Intent(getBaseContext(), TopicSubscriber.class));

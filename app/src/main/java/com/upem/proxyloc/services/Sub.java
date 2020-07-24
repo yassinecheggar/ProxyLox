@@ -1,6 +1,10 @@
 package com.upem.proxyloc.services;
 
+import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.upem.proxyloc.R;
@@ -19,10 +23,12 @@ public class Sub {
     private MqttClient mqttClient;
     private MqttConnectOptions connOpts;
     private Context context;
+    private Activity  activity;
 
 
     public Sub(Context context) {
         this.context = context;
+
     }
 
     public void Subscrib() {
@@ -50,7 +56,7 @@ public class Sub {
 
 
             // Topic filter the client will subscribe to
-            final String subTopic = "test2";
+            final String subTopic = "proxylox/in/data";
 
             // Callback - Anonymous inner-class for receiving messages
             mqttClient.setCallback(new MqttCallback() {
@@ -68,7 +74,22 @@ public class Sub {
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     String msg = new String(message.getPayload());
-                    JSONObject obj = new JSONObject(msg);
+                    if(msg.equals("startble")){
+                        context.startService(new Intent(context,BLE.class));
+                    }
+                    if(msg.equals("stopble")){
+                        context.stopService(new Intent(context,BLE.class));
+                    }
+
+                    if(msg.contains("setStatus")){
+                        Log.e("msg", "messageArrived: " );
+                        SharedPreferences prefs = context.getSharedPreferences("ProxyLoxStatus", context.MODE_PRIVATE);
+                        String[] parts = msg.split(":");
+                        prefs.edit().putString("status",parts[1]).commit();
+
+                    }
+
+                   // JSONObject obj = new JSONObject(msg);
                    // Global.MarkerObjects.add(obj);
                     //Global.changes =Global.changes+1 ;
                     Log.e("TAG", "messageArrived: " + msg);

@@ -1,12 +1,14 @@
 package com.upem.proxyloc.services;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -41,6 +43,7 @@ public class TopicPublisher extends Service {
     private SQLiteDatabase database;
     private   Post post;
     private JSONArray myJsonArray = null;
+    private JSONArray myJsonArray2 = null;
 
     public static final String DATE_FORMAT_2 = "yyyy-MM-dd HH:mm:ss";
 
@@ -49,23 +52,21 @@ public class TopicPublisher extends Service {
     public TopicPublisher() {
 
     }
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
 
-    @SuppressLint("StaticFieldLeak")
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public void onCreate() {
+        super.onCreate();
 
-         dbHelper  =  new DBHelper(this);
+
+
+        dbHelper  =  new DBHelper(this);
         final SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT_2);
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        ScheduledExecutorService scheduler1 = Executors.newSingleThreadScheduledExecutor();
         final Pub pub = new Pub(getApplicationContext());
         post = new Post();
 
-       // Global.mac = getBluetoothMacAddress();
+        // Global.mac = getBluetoothMacAddress();
 //------------------------------------------------------------
 
 //------------------------------------------------------------
@@ -107,7 +108,7 @@ public class TopicPublisher extends Service {
                             }
                         }
 
-                         myJsonArray = dbHelper.getAll();
+                        myJsonArray = dbHelper.getAll();
 
                         if (myJsonArray.length() > 0) {
                             Log.e("pots data base", " size " + myJsonArray.length());
@@ -123,8 +124,41 @@ public class TopicPublisher extends Service {
                     }
                 }, 0, 10, TimeUnit.SECONDS);
 
+        scheduler1.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+
+                myJsonArray2 = dbHelper.getAllexpo();
+                if (myJsonArray2.length() > 0) {
+
+                    try {
+                        Log.e("send data", " send  =  " +  SenData(myJsonArray2) );;
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+            }
+        },3,4,TimeUnit.HOURS);
 
 
+
+
+
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
 
         return START_STICKY;
     }

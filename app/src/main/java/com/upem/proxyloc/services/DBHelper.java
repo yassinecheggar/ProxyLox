@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,19 +21,24 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
     public DBHelper(Context context) {
-        super(context, DATABASE_NAME, null, 2);
+        super(context, DATABASE_NAME, null, 3);
+
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         // TODO Auto-generated method stub
         db.execSQL("create table mylocation (id integer primary key autoincrement, mac text,latitude text,longitude text, date text)");
+        db.execSQL("create table expose (id integer primary key autoincrement, mac text, sec integer)");
+
+
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // TODO Auto-generated method stub
         db.execSQL("DROP TABLE IF EXISTS mylocation");
+        db.execSQL("DROP TABLE IF EXISTS expose");
         onCreate(db);
     }
 
@@ -48,9 +54,12 @@ public class DBHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public Cursor getData(int id) {
+    public Cursor getexpo(String mac) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res = db.rawQuery("select * from contacts where id=" + id + "", null);
+
+        Cursor res = db.rawQuery("select * from expose where mac=" + "'"+mac + "'", null);
+
+        Log.e("db", "getexpo: " + res.getCount() );
         return res;
     }
 
@@ -60,15 +69,13 @@ public class DBHelper extends SQLiteOpenHelper {
         return numRows;
     }
 
-    public boolean updateContact(Integer id, String name, String phone, String email, String street, String place) {
+    public boolean updateExpose(String mac, int sec) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        contentValues.put("name", name);
-        contentValues.put("phone", phone);
-        contentValues.put("email", email);
-        contentValues.put("street", street);
-        contentValues.put("place", place);
-        db.update("contacts", contentValues, "id = ? ", new String[]{Integer.toString(id)});
+        //contentValues.put("mac", mac);
+        contentValues.put("sec", sec);
+
+        db.update("expose", contentValues, "mac = " +"'"+ mac + "'", null);
         return true;
     }
 
@@ -82,6 +89,11 @@ public class DBHelper extends SQLiteOpenHelper {
     public void deleteall() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM mylocation");
+    }
+
+    public void deleteallexpose() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM expose");
     }
 
     public JSONArray getAll() {
@@ -109,4 +121,39 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         return array_list;
     }
+
+    public boolean insertExpose(String mac, int sec) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("mac", mac);
+        contentValues.put("sec", sec);
+        db.insert("expose", null, contentValues);
+        return true;
+    }
+
+
+    public JSONArray getAllexpo() {
+
+        JSONArray array_list = new JSONArray();
+        //hp = new HashMap();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res = db.rawQuery("select * from expose", null);
+        res.moveToFirst();
+
+        while (res.isAfterLast() == false) {
+            JSONObject obj = new JSONObject();
+            try {
+                obj.put("mac", res.getString(res.getColumnIndex("mac")));
+                obj.put("sec", res.getString(res.getColumnIndex("sec")));
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            array_list.put(obj);
+            res.moveToNext();
+        }
+        return array_list;
+    }
+
 }

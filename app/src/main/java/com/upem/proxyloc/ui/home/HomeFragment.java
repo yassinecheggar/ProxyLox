@@ -237,7 +237,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
 
         try {
-            jsonArray = markers.execute("http://0.tcp.ngrok.io:11377/jstst").get();
+            jsonArray = markers.execute("https://proxylox.herokuapp.com/jstst").get();
 
             if (jsonArray != null) {
                 update(gmap, jsonArray);
