@@ -1,6 +1,7 @@
 package com.upem.proxyloc;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -82,13 +83,13 @@ public class Home extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().hide();
-        getSupportFragmentManager().popBackStackImmediate();
 
 
+/*
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (!mBluetoothAdapter.isEnabled()) {
             mBluetoothAdapter.enable();
-        }
+        }*/
 
         final DrawerLayout drawer = findViewById(R.id.drawer_layout);
         final NavigationView navigationView = findViewById(R.id.nav_view);
@@ -99,11 +100,28 @@ public class Home extends AppCompatActivity {
                 R.id.nav_tools, R.id.nav_share, R.id.nav_send)
                 .setDrawerLayout(drawer)
                 .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        /*
+        NavController navController = Navigation.findNavController(this, R.id.fragment3);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
-
+*/
         navigationView.bringToFront();
+
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment3);
+
+
+//-------------------------------------------------------------------------
+       /* HomeFragment homeFragment = new HomeFragment();
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment3, homeFragment, "HomeFragment")
+                .addToBackStack("map")
+                .commit();
+*/
+        Global.mac = getDeviceIMEI();
+        Log.e("id", "divice Id"+ getDeviceIMEI() );
+
+ //------------------------------------------------------------------------
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -131,7 +149,7 @@ public class Home extends AppCompatActivity {
                                 .replace(getVisibleFragment().getId(), galleryFragment, "SettingsFragment")
                                 .addToBackStack(null)
                                 .commit();
-                        Log.e("gall", "onNavigationItemSelected: " + getVisibleFragment().getId() + " :" + R.id.nav_host_fragment);
+                        Log.e("gall", "onNavigationItemSelected: " + getVisibleFragment().getId() + " :" + R.id.fragment3);
                         drawer.closeDrawers();
                         break;
 
@@ -182,16 +200,7 @@ public class Home extends AppCompatActivity {
         //**************************************
 
 
-        HomeFragment homeFragment = new HomeFragment();
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.nav_host_fragment, homeFragment, "HomeFragment")
-                .addToBackStack(null)
-
-                .commit();
-
-         Global.mac = getDeviceIMEI();
-        Log.e("id", "divice Id"+ getDeviceIMEI() );
 
     }
 
@@ -204,7 +213,7 @@ public class Home extends AppCompatActivity {
 
     @Override
     public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        NavController navController = Navigation.findNavController(this, R.id.fragment3);
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
     }
@@ -270,25 +279,7 @@ public class Home extends AppCompatActivity {
     }
 
 
-    private String getBluetoothMacAddress() {
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        String bluetoothMacAddress = "";
-        try {
-            Field mServiceField = bluetoothAdapter.getClass().getDeclaredField("mService");
-            mServiceField.setAccessible(true);
-
-            Object btManagerService = mServiceField.get(bluetoothAdapter);
-
-            if (btManagerService != null) {
-                bluetoothMacAddress = (String) btManagerService.getClass().getMethod("getAddress").invoke(btManagerService);
-            }
-        } catch (NoSuchFieldException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ignore) {
-
-        }
-        Log.e("ff", "getBluetoothMacAddress: " + bluetoothMacAddress);
-        return bluetoothMacAddress;
-    }
-
+    @SuppressLint("NewApi")
     public String getDeviceIMEI() {
         String deviceUniqueIdentifier = null;
         TelephonyManager tm = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
@@ -311,6 +302,32 @@ public class Home extends AppCompatActivity {
             deviceUniqueIdentifier = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
         }
         return deviceUniqueIdentifier;
+    }
+
+    public void onBackPressed() {
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+         super.onBackPressed();
+
+        }
+        else
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("Are you sure you want to exit?")
+                    .setCancelable(false)
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            finish();
+                        }
+                    })
+                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
+
     }
 
 
