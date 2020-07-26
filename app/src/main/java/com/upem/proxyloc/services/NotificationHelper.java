@@ -67,4 +67,22 @@ public class NotificationHelper extends ContextWrapper {
         notifManager.notify( id, notification );
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public Notification getnotif(int id, boolean prioritary, String title, String message ) {
+        String channelId = prioritary ? CHANNEL_HIGH_ID : CHANNEL_DEFAULT_ID;
+        Resources res = getApplicationContext().getResources();
+
+        Notification notification = new Notification.Builder( getApplicationContext(), channelId )
+                .setContentTitle( title )
+                .setContentText( message )
+                .setSmallIcon( R.drawable.ic_warning_black_24dp )
+                .setLargeIcon( BitmapFactory.decodeResource(res, R.drawable.antivirus) )
+                .setAutoCancel( true )
+                .build();
+
+       return  notification;
+    }
+
+
+
 }

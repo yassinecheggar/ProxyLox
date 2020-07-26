@@ -29,6 +29,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -63,12 +64,14 @@ import org.altbeacon.beacon.Region;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 public class Home extends AppCompatActivity {
 
+    public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
     private AppBarConfiguration mAppBarConfiguration;
     protected static final String TAG = "MonitoringActivity";
     private BeaconManager beaconManager;
@@ -84,13 +87,6 @@ public class Home extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().hide();
 
-
-/*
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (!mBluetoothAdapter.isEnabled()) {
-            mBluetoothAdapter.enable();
-        }*/
-
         final DrawerLayout drawer = findViewById(R.id.drawer_layout);
         final NavigationView navigationView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
@@ -100,28 +96,16 @@ public class Home extends AppCompatActivity {
                 R.id.nav_tools, R.id.nav_share, R.id.nav_send)
                 .setDrawerLayout(drawer)
                 .build();
-        /*
-        NavController navController = Navigation.findNavController(this, R.id.fragment3);
-        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
-        NavigationUI.setupWithNavController(navigationView, navController);
-*/
+
         navigationView.bringToFront();
 
         Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment3);
 
 
-//-------------------------------------------------------------------------
-       /* HomeFragment homeFragment = new HomeFragment();
-
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment3, homeFragment, "HomeFragment")
-                .addToBackStack("map")
-                .commit();
-*/
         Global.mac = getDeviceIMEI();
         Log.e("id", "divice Id"+ getDeviceIMEI() );
 
- //------------------------------------------------------------------------
+
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -130,11 +114,6 @@ public class Home extends AppCompatActivity {
 
                     case R.id.nav_home:
 
-                      /*  Fragment fragmentA = getSupportFragmentManager().findFragmentById(R.id.nav_home);
-                        if (fragmentA == null) {
-                            Log.e("messsaage", "not found " );                        } else {
-                            //Log.e("messsaage", "onNavigationItemSelected: eexist " );
-                        }*/
                         HomeFragment homeFragment = new HomeFragment();
                         getSupportFragmentManager().beginTransaction()
                                 .replace(getVisibleFragment().getId(), homeFragment, "HomeFragment")
@@ -179,28 +158,6 @@ public class Home extends AppCompatActivity {
             startService(serviceIntent);
             startService(serviceIntent1);
         }
-
-      /*  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-            startForegroundService(new Intent(this,  TopicSubscriber.class));
-            startForegroundService(new Intent(this,  TopicPublisher.class));
-
-        } else {
-            this.startService(new Intent(this, TopicSubscriber.class));
-            this.startService(new Intent(this, TopicPublisher.class));
-        }
-*/
-//        this.startService(new Intent(this, TopicSubscriber.class));
-       // this.startService(new Intent(this, TopicPublisher.class));
-        //   startService(new Intent(getBaseContext(), TopicSubscriber.class));
-        // startService(new Intent(getBaseContext(),  TopicPublisher.class));
-        //********************************
-
-
-        //**************************************
-
-
-
 
     }
 

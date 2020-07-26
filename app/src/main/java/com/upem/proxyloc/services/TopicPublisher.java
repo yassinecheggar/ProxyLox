@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -53,11 +54,13 @@ public class TopicPublisher extends Service {
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onCreate() {
         super.onCreate();
 
-
+        final NotificationHelper notificationHelper = new NotificationHelper(getBaseContext());
+        startForeground(1,notificationHelper.getnotif(2,false,"loal","laaaal"));
 
         dbHelper  =  new DBHelper(this);
         final SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT_2);

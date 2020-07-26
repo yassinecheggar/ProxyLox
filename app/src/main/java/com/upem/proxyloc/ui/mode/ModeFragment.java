@@ -18,8 +18,10 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.upem.proxyloc.Home;
 import com.upem.proxyloc.R;
 import com.upem.proxyloc.services.BLE;
+import com.upem.proxyloc.services.TopicPublisher;
 import com.upem.proxyloc.services.TopicSubscriber;
 
 public class ModeFragment extends Fragment {
@@ -42,7 +44,7 @@ private Switch aSwitch;
 
 
                 if((isMyServiceRunning(BLE.class)==false)&& aSwitch.isChecked()==true){
-                getActivity().startService(new Intent(getActivity(),BLE.class));
+                    startDetection();
                     Log.e("start ble", "onCheckedChanged: ");
                 }else if(((isMyServiceRunning(BLE.class)==true)&& aSwitch.isChecked()==false)){
 
@@ -71,4 +73,21 @@ private Switch aSwitch;
         }
         return false;
     }
+
+
+    public void startDetection(){
+
+        Intent serviceIntent = new Intent(getContext(),BLE.class);
+
+        if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.O) {
+            getActivity().startForegroundService(serviceIntent);
+
+        } else {
+           getActivity().startService(serviceIntent);
+
+        }
+
+    }
+
+
 }
