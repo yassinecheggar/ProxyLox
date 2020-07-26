@@ -40,15 +40,17 @@ import java.util.concurrent.TimeUnit;
 public class TopicPublisher extends Service {
 
     private Location currentBestLocation = null;
-    private  DBHelper dbHelper;
+    private DBHelper dbHelper;
     private SQLiteDatabase database;
-    private   Post post;
+    private Post post;
     private JSONArray myJsonArray = null;
     private JSONArray myJsonArray2 = null;
+    private boolean res;
+    private boolean res2;
 
     public static final String DATE_FORMAT_2 = "yyyy-MM-dd HH:mm:ss";
 
-    LocationManager mLocationManager ;
+    LocationManager mLocationManager;
 
     public TopicPublisher() {
 
@@ -60,9 +62,9 @@ public class TopicPublisher extends Service {
         super.onCreate();
 
         final NotificationHelper notificationHelper = new NotificationHelper(getBaseContext());
-        startForeground(1,notificationHelper.getnotif(2,false,"loal","laaaal"));
+        startForeground(1, notificationHelper.getnotif(2, false, "loal", "laaaal"));
 
-        dbHelper  =  new DBHelper(this);
+        dbHelper = new DBHelper(this);
         final SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT_2);
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         ScheduledExecutorService scheduler1 = Executors.newSingleThreadScheduledExecutor();
@@ -76,10 +78,10 @@ public class TopicPublisher extends Service {
         scheduler.scheduleAtFixedRate
                 (new Runnable() {
                     public void run() {
-                        boolean Todo =  checkifgpsEnable();
+                        boolean Todo = checkifgpsEnable();
 
-                        Log.e("is connected", " internet " +isInternetAvailable() );
-                        if(currentBestLocation!=null) {
+                        Log.e("is connected", " internet " + isInternetAvailable());
+                        if (currentBestLocation != null) {
                             try {
                                 Log.e("db size", "run: " + dbHelper.getAll().length());
                                 // no internet
@@ -97,7 +99,7 @@ public class TopicPublisher extends Service {
                                         obj.put("longitude", String.valueOf(currentBestLocation.getLongitude()));
                                         obj.put("TimeColumn", dateFormat.format(Calendar.getInstance().getTime()));
                                         obj.put("UsrStatus", Global.Userstauts);
-                                        pub.publish( obj.toString());
+                                        pub.publish(obj.toString());
                                     } catch (JSONException e) {
                                         e.printStackTrace();
                                     }
@@ -114,28 +116,34 @@ public class TopicPublisher extends Service {
                         myJsonArray = dbHelper.getAll();
 
                         if (myJsonArray.length() > 0) {
-                            Log.e("pots data base", " size " + myJsonArray.length());
+                            Log.e("bbase", " size " + myJsonArray.length());
                             try {
-                                Log.e("send data", " send  =  " +  SenData(myJsonArray) );;
-                            } catch (ExecutionException e) {
-                                e.printStackTrace();
-                            } catch (InterruptedException e) {
+                                res = SenData(myJsonArray, "https://proxylox.herokuapp.com/out/");
+                                if (res == true) {
+                                    dbHelper.deleteall();
+                                }
+
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
-
                         }
                     }
-                }, 0, 10, TimeUnit.SECONDS);
+                }, 5, 10, TimeUnit.SECONDS);
 
         scheduler1.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
 
                 myJsonArray2 = dbHelper.getAllexpo();
+                Log.e("dbExpo", "size" + myJsonArray2.length()  );
                 if (myJsonArray2.length() > 0) {
 
                     try {
-                        Log.e("send data", " send  =  " +  SenData(myJsonArray2) );;
+                        res2 = SenData(myJsonArray, "https://proxylox.herokuapp.com/out/");
+                        if (res2 == true) {
+                            dbHelper.deleteallexpose();
+                        }
+
                     } catch (ExecutionException e) {
                         e.printStackTrace();
                     } catch (InterruptedException e) {
@@ -145,10 +153,7 @@ public class TopicPublisher extends Service {
                 }
 
             }
-        },3,4,TimeUnit.HOURS);
-
-
-
+        }, 3, 4, TimeUnit.SECONDS);
 
 
     }
@@ -168,7 +173,7 @@ public class TopicPublisher extends Service {
 
 
     private Location getLastKnownLocation() {
-        mLocationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
+        mLocationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
         List<String> providers = mLocationManager.getProviders(true);
         Location bestLocation = null;
         for (String provider : providers) {
@@ -181,26 +186,27 @@ public class TopicPublisher extends Service {
                 bestLocation = l;
             }
         }
-        Log.e("loc", "getLastKnownLocation: " +bestLocation.getLongitude() +" latitude" + bestLocation.getLatitude() );
+        Log.e("loc", "getLastKnownLocation: " + bestLocation.getLongitude() + " latitude" + bestLocation.getLatitude());
         return bestLocation;
     }
 
-    private boolean  checkifgpsEnable() {
+    private boolean checkifgpsEnable() {
 
         boolean gps_enabled = false;
         boolean network_enabled = false;
-        mLocationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
+        mLocationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
         try {
             gps_enabled = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
-        } catch(Exception ex) {}
+        } catch (Exception ex) {
+        }
 
 
-        if(!gps_enabled) {
-            Log.e("check", "checkifgpsEnable: nooooooooon " );
+        if (!gps_enabled) {
+            Log.e("check", "checkifgpsEnable: nooooooooon ");
             return false;
-        }else{
-             currentBestLocation =  getLastKnownLocation();
+        } else {
+            currentBestLocation = getLastKnownLocation();
             return true;
         }
 
@@ -232,22 +238,22 @@ public class TopicPublisher extends Service {
         } catch (NoSuchFieldException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ignore) {
 
         }
-        Log.e("ff", "getBluetoothMacAddress: " + bluetoothMacAddress );
+        Log.e("ff", "getBluetoothMacAddress: " + bluetoothMacAddress);
         return bluetoothMacAddress;
     }
 
 
-    public  synchronized boolean SenData(JSONArray jsonArray) throws ExecutionException, InterruptedException {
+    public synchronized boolean SenData(JSONArray jsonArray, String url) throws ExecutionException, InterruptedException {
 
 
-            String  rep =  post.sendshit("http://yassi-0b243671.localhost.run/api/user/testPost", jsonArray)    ;
-            if(rep.equals("succes")){
-               //dbHelper.deleteall();
-                Log.e("post data top", "data sent succesfully "  );
-                return true;
-            }
+        String rep = post.sendshit(url, jsonArray);
+        if (rep.equals("succes")) {
+            //dbHelper.deleteall();
+            Log.e("post data top", "data sent succesfully ");
+            return true;
+        }
 
-            return false ;
+        return false;
 
     }
 
