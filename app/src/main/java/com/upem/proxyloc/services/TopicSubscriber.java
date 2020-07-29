@@ -41,9 +41,12 @@ public class TopicSubscriber extends Service {
     public void onCreate() {
         super.onCreate();
         sub = new Sub(this);
-        final NotificationHelper notificationHelper = new NotificationHelper(getBaseContext());
+        /*final NotificationHelper notificationHelper = new NotificationHelper(getBaseContext());
 
-        startForeground(1,notificationHelper.getnotif(2,false,"loal","laaaal"));
+        startForeground(1,notificationHelper.getnotif(2,false,"loal","laaaal"));*/
+        final NotificationHelper notificationHelper = new NotificationHelper(getBaseContext());
+        startForeground(1, notificationHelper.cretNotification());
+
         final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
         new AsyncTask<Void, Void, String>() {

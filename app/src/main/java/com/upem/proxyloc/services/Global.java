@@ -12,7 +12,7 @@ public class Global {
     public static  Vector<JSONObject> MarkerObjects = new Vector<>();
     public static int changes=0;
     public static String mac;
-    public static int Userstauts=0;
+    public static String Userstauts="0";
 
 
 

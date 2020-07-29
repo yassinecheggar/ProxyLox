@@ -83,10 +83,13 @@ public class Sub {
 
                     if(msg.contains("setStatus")){
                         Log.e("msg", "messageArrived: " );
-                        SharedPreferences prefs = context.getSharedPreferences("ProxyLoxStatus", context.MODE_PRIVATE);
                         String[] parts = msg.split(":");
-                        prefs.edit().putString("status",parts[1]).commit();
+                        if((parts[1].equals("0"))||parts[1].equals("1")||(parts[1].equals("2"))){
+                        SharedPreferences prefs = context.getSharedPreferences("ProxyLoxStatus", context.MODE_PRIVATE);
 
+                            prefs.edit().putString("status",parts[1]).commit();
+                            Global.Userstauts = parts[1] ;
+                        }
                     }
 
                    // JSONObject obj = new JSONObject(msg);

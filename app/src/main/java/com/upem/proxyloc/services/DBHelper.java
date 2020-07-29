@@ -21,7 +21,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
     public DBHelper(Context context) {
-        super(context, DATABASE_NAME, null, 3);
+        super(context, DATABASE_NAME, null, 5);
 
     }
 
@@ -29,7 +29,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         // TODO Auto-generated method stub
         db.execSQL("create table mylocation (id integer primary key autoincrement, mac text,latitude text,longitude text, date text)");
-        db.execSQL("create table expose (id integer primary key autoincrement, mac text, sec integer)");
+        db.execSQL("create table expose (id integer primary key autoincrement, mac text, sec integer, startdate text, lastdate text)");
 
 
     }
@@ -69,11 +69,13 @@ public class DBHelper extends SQLiteOpenHelper {
         return numRows;
     }
 
-    public boolean updateExpose(String mac, int sec) {
+    public boolean updateExpose(String mac, int sec , String lastdate) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         //contentValues.put("mac", mac);
         contentValues.put("sec", sec);
+        contentValues.put("lastdate", lastdate);
+
 
         db.update("expose", contentValues, "mac = " +"'"+ mac + "'", null);
         return true;
@@ -122,11 +124,13 @@ public class DBHelper extends SQLiteOpenHelper {
         return array_list;
     }
 
-    public boolean insertExpose(String mac, int sec) {
+    public boolean insertExpose(String mac, int sec,String startdate,  String lastdate) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put("mac", mac);
         contentValues.put("sec", sec);
+        contentValues.put("startdate", startdate);
+        contentValues.put("lastdate", lastdate);
         db.insert("expose", null, contentValues);
         return true;
     }
@@ -145,6 +149,8 @@ public class DBHelper extends SQLiteOpenHelper {
             try {
                 obj.put("mac", res.getString(res.getColumnIndex("mac")));
                 obj.put("sec", res.getString(res.getColumnIndex("sec")));
+                obj.put("startdate", res.getString(res.getColumnIndex("startdate")));
+                obj.put("lastdate", res.getString(res.getColumnIndex("lastdate")));
 
 
             } catch (JSONException e) {

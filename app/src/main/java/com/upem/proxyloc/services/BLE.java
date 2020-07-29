@@ -2,6 +2,8 @@ package com.upem.proxyloc.services;
 
 import android.Manifest;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseSettings;
@@ -33,7 +35,9 @@ import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 import org.json.JSONArray;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 
 public class BLE extends Service implements BeaconConsumer {
@@ -46,6 +50,8 @@ public class BLE extends Service implements BeaconConsumer {
     private BeaconTransmitter beaconTransmitter;
     private JSONArray  jsonBeacons;
     private  DBHelper dbHelper;
+    private  NotificationHelper notificationHelper ;
+    public static final String DATE_FORMAT_2 = "yyyy-MM-dd HH:mm:ss";
 
     @Nullable
     @Override
@@ -57,12 +63,22 @@ public class BLE extends Service implements BeaconConsumer {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        dostuf();
-        dostuf2();
-        jsonBeacons =  new JSONArray();
-        dbHelper  =  new DBHelper(this);
+
         //dbHelper.deleteallexpose();
         return START_NOT_STICKY;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        dostuf();
+        dostuf2();
+          notificationHelper = new NotificationHelper(getBaseContext());
+        startForeground(1, notificationHelper.cretNotification());
+        jsonBeacons =  new JSONArray();
+        dbHelper  =  new DBHelper(this);
+
     }
 
     public void dostuf() {
@@ -114,6 +130,7 @@ public class BLE extends Service implements BeaconConsumer {
 
      @Override
     public void onBeaconServiceConnect() {
+         final SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT_2);
         beaconManager.removeAllMonitorNotifiers();
 
         beaconManager.addRangeNotifier(new RangeNotifier() {
@@ -128,19 +145,19 @@ public class BLE extends Service implements BeaconConsumer {
                     for (Beacon b : beacons)  {
                         Cursor cur = dbHelper.getexpo(b.getId1().toString());
                         if(cur.getCount()==0){
-                            dbHelper.insertExpose(b.getId1().toString(),1);
+                            dbHelper.insertExpose(b.getId1().toString(),1 , dateFormat.format(Calendar.getInstance().getTime()),"");
                         }else{
 
                             cur.moveToFirst();
-                            //  dbHelper.updateExpose(cur.getString(cur.getColumnIndex("mac")),cur.getInt(cur.getColumnIndex("sec"))+1);
-                            Log.e("lola", "  count  " +cur.getString(0) + "  " +  cur.getString(1)+ " "+ cur.getString(2));
+                             dbHelper.updateExpose(cur.getString(1),cur.getInt(2)+1,dateFormat.format(Calendar.getInstance().getTime()));
+                           // Log.e("lola", "  count  " +cur.getString(0) + "  " +  cur.getString(1)+ " "+ cur.getString(2));
                         }
                     }
                     // notificationId is a unique int for each notification that you must define
                     if (Ntfcount < beacons.size()) {
-
-                        final NotificationHelper notificationHelper = new NotificationHelper(getBaseContext());
-                        notificationHelper.notify(1, false, "My title", "My content" );
+                       // final NotificationHelper notificationHelper = new NotificationHelper(getBaseContext());
+                        //notificationHelper.notify(12, true, "My title", "My content" );*n
+                        notificationHelper.Notifications(Ntfcount+100);
                         Ntfcount++;
                     }
                 }
@@ -217,8 +234,5 @@ public class BLE extends Service implements BeaconConsumer {
 
     }
 
-    public void ChecknSend(){
 
-
-    }
 }

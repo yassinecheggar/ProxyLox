@@ -61,8 +61,11 @@ public class TopicPublisher extends Service {
     public void onCreate() {
         super.onCreate();
 
+       //final NotificationHelper notificationHelper = new NotificationHelper(getBaseContext());
+        //startForeground(1, notificationHelper.getnotif(2, false, "loal", "laaaal"));
         final NotificationHelper notificationHelper = new NotificationHelper(getBaseContext());
-        startForeground(1, notificationHelper.getnotif(2, false, "loal", "laaaal"));
+        startForeground(1, notificationHelper.cretNotification());
+
 
         dbHelper = new DBHelper(this);
         final SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT_2);
@@ -120,7 +123,7 @@ public class TopicPublisher extends Service {
                             try {
                                 res = SenData(myJsonArray, "https://proxylox.herokuapp.com/out/");
                                 if (res == true) {
-                                    dbHelper.deleteall();
+                                   // dbHelper.deleteall();
                                 }
 
                             } catch (Exception e) {
@@ -128,7 +131,7 @@ public class TopicPublisher extends Service {
                             }
                         }
                     }
-                }, 5, 10, TimeUnit.SECONDS);
+                }, 5, 60, TimeUnit.SECONDS);
 
         scheduler1.scheduleAtFixedRate(new Runnable() {
             @Override
@@ -139,7 +142,7 @@ public class TopicPublisher extends Service {
                 if (myJsonArray2.length() > 0) {
 
                     try {
-                        res2 = SenData(myJsonArray, "https://proxylox.herokuapp.com/out/");
+                        res2 = SenData(myJsonArray2, "https://httpdump.io/0wwkd");
                         if (res2 == true) {
                             dbHelper.deleteallexpose();
                         }
@@ -153,7 +156,7 @@ public class TopicPublisher extends Service {
                 }
 
             }
-        }, 3, 4, TimeUnit.SECONDS);
+        }, 0, 13, TimeUnit.SECONDS);
 
 
     }
@@ -256,6 +259,8 @@ public class TopicPublisher extends Service {
         return false;
 
     }
+
+
 
 
 }
