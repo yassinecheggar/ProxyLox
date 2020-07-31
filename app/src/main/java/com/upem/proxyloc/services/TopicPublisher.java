@@ -121,9 +121,9 @@ public class TopicPublisher extends Service {
                         if (myJsonArray.length() > 0) {
                             Log.e("bbase", " size " + myJsonArray.length());
                             try {
-                                res = SenData(myJsonArray, "https://proxylox.herokuapp.com/out/");
+                                res = SenData(myJsonArray, "https://proxylox.herokuapp.com/out");
                                 if (res == true) {
-                                   // dbHelper.deleteall();
+                                   dbHelper.deleteall();
                                 }
 
                             } catch (Exception e) {

@@ -57,6 +57,8 @@ import com.upem.proxyloc.services.TopicSubscriber;
 import com.upem.proxyloc.ui.gallery.GalleryFragment;
 import com.upem.proxyloc.ui.home.HomeFragment;
 import com.upem.proxyloc.ui.mode.ModeFragment;
+import com.upem.proxyloc.ui.share.ShareFragment;
+import com.upem.proxyloc.ui.slideshow.SlideshowFragment;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -139,6 +141,18 @@ public class Home extends AppCompatActivity {
                                 .commit();
                         drawer.closeDrawers();
                         break;
+
+
+                    case R.id.nav_test:
+
+                        ShareFragment shareFragment = new ShareFragment();
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(getVisibleFragment().getId(), shareFragment, "shareFragment")
+                                .addToBackStack(null)
+                                .commit();
+                        drawer.closeDrawers();
+                        break;
+
 
                     case R.id.nav_gallery:
                         GalleryFragment galleryFragment = new GalleryFragment();

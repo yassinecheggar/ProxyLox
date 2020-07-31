@@ -22,4 +22,17 @@
     <string name="mqtt_pass">usa9boldpiapdjqr9b7gii14h</string>
     <string name="mqtt_user">solace-cloud-client</string>
 
+
+
+    <string-array name="planets_array">
+        <item>Mercury</item>
+        <item>Venus</item>
+        <item>Earth</item>
+        <item>Mars</item>
+        <item>Jupiter</item>
+        <item>Saturn</item>
+        <item>Uranus</item>
+        <item>Neptune</item>
+    </string-array>
+
 </resources>
