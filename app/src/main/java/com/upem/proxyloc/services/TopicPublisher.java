@@ -142,7 +142,7 @@ public class TopicPublisher extends Service {
                 if (myJsonArray2.length() > 0) {
 
                     try {
-                        res2 = SenData(myJsonArray2, "https://httpdump.io/0wwkd");
+                        res2 = SenData(myJsonArray2, "https://proxylox.herokuapp.com/out/"+Global.mac);
                         if (res2 == true) {
                             dbHelper.deleteallexpose();
                         }

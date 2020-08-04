@@ -133,11 +133,10 @@ public class Home extends AppCompatActivity {
                 switch (menuItem.getItemId()) {
 
                     case R.id.nav_home:
-
-                        HomeFragment homeFragment = new HomeFragment();
+                        HomeFragment homeFragment= null;
+                             homeFragment = new HomeFragment();
                         getSupportFragmentManager().beginTransaction()
-                                .replace(getVisibleFragment().getId(), homeFragment, "HomeFragment")
-                                .addToBackStack(null)
+                                .replace(getVisibleFragment().getId(), homeFragment)
                                 .commit();
                         drawer.closeDrawers();
                         break;
@@ -145,17 +144,31 @@ public class Home extends AppCompatActivity {
 
                     case R.id.nav_test:
 
-                        ShareFragment shareFragment = new ShareFragment();
+
+                        ShareFragment shareFragment= null;
+                        shareFragment= (ShareFragment) getSupportFragmentManager().findFragmentByTag("navtest");
+                        if(shareFragment == null ){
+                             shareFragment = new ShareFragment();
+                        }
+
                         getSupportFragmentManager().beginTransaction()
-                                .replace(getVisibleFragment().getId(), shareFragment, "shareFragment")
+                                .replace(getVisibleFragment().getId(), shareFragment, "navtest")
                                 .addToBackStack(null)
+
                                 .commit();
                         drawer.closeDrawers();
                         break;
 
 
                     case R.id.nav_gallery:
-                        GalleryFragment galleryFragment = new GalleryFragment();
+
+                        GalleryFragment galleryFragment= null;
+                        galleryFragment= (GalleryFragment) getSupportFragmentManager().findFragmentByTag("SettingsFragment");
+                        if(galleryFragment == null ){
+                             galleryFragment = new GalleryFragment();
+                        }
+
+
                         getSupportFragmentManager().beginTransaction()
                                 .replace(getVisibleFragment().getId(), galleryFragment, "SettingsFragment")
                                 .addToBackStack(null)
@@ -166,9 +179,15 @@ public class Home extends AppCompatActivity {
 
 
                     case R.id.nav_manuel:
-                        ModeFragment modeFragment = new ModeFragment();
+
+                        ModeFragment modeFragment= null;
+                        modeFragment= (ModeFragment) getSupportFragmentManager().findFragmentByTag("nav_manue");
+                        if(modeFragment == null ){
+                             modeFragment = new  ModeFragment();
+                        }
+
                         getSupportFragmentManager().beginTransaction()
-                                .replace(getVisibleFragment().getId(), modeFragment, "SettingsFragment")
+                                .replace(getVisibleFragment().getId(), modeFragment, "nav_manue")
                                 .addToBackStack(null)
                                 .commit();
                         drawer.closeDrawers();
