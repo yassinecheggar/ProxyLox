@@ -2,12 +2,16 @@ package com.upem.proxyloc.services;
 
 import android.app.Activity;
 import android.app.Application;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Handler;
 import android.util.Log;
 
+import com.upem.proxyloc.Home;
 import com.upem.proxyloc.R;
+import com.upem.proxyloc.SplashScreen;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -18,6 +22,9 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.JSONObject;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class Sub {
 
     private MqttClient mqttClient;
@@ -26,9 +33,10 @@ public class Sub {
     private Activity  activity;
 
 
+private  Intent ble ;
     public Sub(Context context) {
         this.context = context;
-
+       ble = new Intent(context,BLE.class);
     }
 
     public void Subscrib() {
@@ -56,7 +64,7 @@ public class Sub {
 
 
             // Topic filter the client will subscribe to
-            final String subTopic = "proxylox/in/data";
+            final String subTopic = "proxylox/in/data/"+Global.mac;
 
             // Callback - Anonymous inner-class for receiving messages
             mqttClient.setCallback(new MqttCallback() {
@@ -75,10 +83,22 @@ public class Sub {
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     String msg = new String(message.getPayload());
                     if(msg.equals("startble")){
-                        context.startService(new Intent(context,BLE.class));
+                        start();
+
+
+                        new Timer().schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                context.startService(ble);
+                            }
+                        }, 2000);
+
+
                     }
                     if(msg.equals("stopble")){
-                        context.stopService(new Intent(context,BLE.class));
+                        context.stopService(ble);
+                        stop();
+
                     }
 
                     if(msg.contains("setStatus")){
@@ -135,6 +155,19 @@ public class Sub {
 
        Subscrib();
 
+    }
+
+    public void start(){
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (!mBluetoothAdapter.isEnabled()) {
+            mBluetoothAdapter.enable();
+        }
+    }
+    public void stop(){
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter.isEnabled()) {
+            mBluetoothAdapter.disable();
+        }
     }
 
 }

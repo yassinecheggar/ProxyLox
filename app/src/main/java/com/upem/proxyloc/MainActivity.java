@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
             mBluetoothAdapter.enable();
         }
 
-        scann();
+       // scann();
     }
 
     public void check(View view){

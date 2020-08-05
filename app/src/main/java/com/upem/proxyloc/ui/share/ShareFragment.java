@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.upem.proxyloc.R;
 import com.upem.proxyloc.adaptor.CardAdaptor;
+import com.upem.proxyloc.ui.spinner.SpinnerFragment;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -111,5 +112,11 @@ public class ShareFragment extends Fragment implements CardAdaptor.OnNoteListene
     @Override
     public void onNoteClick(int position) {
         Toast.makeText(getContext(), ""+position, Toast.LENGTH_SHORT).show();
+
+
+       getActivity().getSupportFragmentManager().beginTransaction()
+                .replace(this.getId(), new SpinnerFragment())
+               .addToBackStack("spinners")
+                .commit();
     }
 }

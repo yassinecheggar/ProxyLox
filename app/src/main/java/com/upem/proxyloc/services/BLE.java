@@ -5,6 +5,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseSettings;
 import android.content.Intent;
@@ -72,6 +73,8 @@ public class BLE extends Service implements BeaconConsumer {
     @Override
     public void onCreate() {
         super.onCreate();
+
+
         dostuf();
         dostuf2();
           notificationHelper = new NotificationHelper(getBaseContext());
@@ -222,7 +225,7 @@ public class BLE extends Service implements BeaconConsumer {
 
     public void stop () throws RemoteException {
 
-
+        stopSelf();
     }
 
     @Override
@@ -231,8 +234,11 @@ public class BLE extends Service implements BeaconConsumer {
         beaconTransmitter.stopAdvertising();
         beaconManager.removeAllMonitorNotifiers();
         this.stopSelf();
+        super.onDestroy();
 
     }
+
+
 
 
 }
