@@ -22,15 +22,25 @@ import com.upem.proxyloc.R;
 import com.upem.proxyloc.services.DBHelper;
 import com.upem.proxyloc.ui.tools.TimePickerFragment;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Vector;
+
 public class SpinnerFragment extends Fragment {
 
     View roott;
     public static String date;
     private DBHelper dbHelper;
-    private String result;
+    private String categorie;
     private ChipGroup chipGroup ;
     private  Spinner spinner;
     private int count =0;
+    private int id=0;
+    private Vector<Spinnerdata>  Vecdata ;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -40,7 +50,7 @@ public class SpinnerFragment extends Fragment {
              spinner = root.findViewById(R.id.planets_spinner);
 
         Bundle bundle = this.getArguments();
-        result = bundle.getString("bundleKey");
+        categorie = bundle.getString("bundleKey");
          // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(root.getContext(),
                 R.array.planets_array, R.layout.spinner_item);
@@ -50,12 +60,24 @@ public class SpinnerFragment extends Fragment {
         spinner.setAdapter(adapter);
 
         Button but =  root.findViewById(R.id.but);
+        Button but2 =  root.findViewById(R.id.button2);
         dbHelper =  new DBHelper(getContext());
+        Vecdata = new Vector<>();
 
         but.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showTimePickerDialog();
+            }
+        });
+
+        but2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                for (Spinnerdata data:Vecdata){
+                    dbHelper.insertactivity(data.categorie,data.selected,data.date);
+                    chipGroup.removeAllViews();
+                }
             }
         });
 
@@ -65,8 +87,8 @@ public class SpinnerFragment extends Fragment {
         apply.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getContext(), spinner.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
-              // dbHelper.insertactivity(result,spinner.getSelectedItem().toString(),date);
+
+              // dbHelper.insertactivity(categorie,spinner.getSelectedItem().toString(),date);
                     addchip();
                 //dbHelper.deleteallactivities();
 
@@ -77,8 +99,9 @@ public class SpinnerFragment extends Fragment {
         Log.e("Spin", "Spinner: " + dbHelper.getActivities()  );
 
          chipGroup = root.findViewById(R.id.chipGroup);
-
-
+        SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd HH:mm");
+        date =sdf.format(new Date());
+        Log.e("f", date);
         return root;
     }
 
@@ -91,13 +114,100 @@ public class SpinnerFragment extends Fragment {
     }
 
     public void addchip(){
+
         if(count<12){
 
-        Chip chip = new Chip(getContext());
+        Spinnerdata obj = new Spinnerdata(categorie,date,spinner.getSelectedItem().toString(), id);
+
+        final Chip chip = new Chip(getContext());
 
         chip.setText(spinner.getSelectedItem().toString());
+            chip.setCloseIconResource(R.drawable.ic_close_black_24dp);
+            chip.setCloseIconVisible(true);
+            chip.setId(count);
 
-        chipGroup.addView(chip);count++; }
+        chip.setOnCloseIconClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                   count--;
+                    chipGroup.removeView(chip);
+                    for (Spinnerdata data:Vecdata) {
+                        if(chip.getId() == data.getId()){
+
+                            Vecdata.remove(data);
+
+                            break;
+                        }
+                    }
+
+                }
+            });
+        chipGroup.addView(chip);
+        Vecdata.add(obj);
+
+        count++;
+            id++;}
 
     }
+
+
+     class Spinnerdata{
+
+        private String categorie;
+        private String date ;
+        private String selected;
+        private int id ;
+
+
+         public Spinnerdata(String categorie, String date, String selected, int id) {
+             this.categorie = categorie;
+             this.date = date;
+             this.id = id;
+             this.selected = selected;
+         }
+
+
+         public String getCategorie() {
+             return categorie;
+         }
+
+         public void setCategorie(String categorie) {
+             this.categorie = categorie;
+         }
+
+         public String getDate() {
+             return date;
+         }
+
+         public void setDate(String date) {
+             this.date = date;
+         }
+
+         public String getSelected() {
+             return selected;
+         }
+
+         public void setSelected(String selected) {
+             this.selected = selected;
+         }
+
+
+         public int getId() {
+             return id;
+         }
+
+         public void setId(int id) {
+             this.id = id;
+         }
+
+         @Override
+         public String toString() {
+             return "Spinnerdata{" +
+                     "categorie=" + categorie +
+                     ", date='" + date + '\'' +
+                     ", selected='" + selected + '\'' +
+                     '}';
+         }
+     }
 }
