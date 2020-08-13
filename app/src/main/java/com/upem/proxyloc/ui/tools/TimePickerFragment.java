@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
@@ -18,8 +19,11 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.upem.proxyloc.R;
+import com.upem.proxyloc.ui.spinner.SpinnerFragment;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 public class TimePickerFragment extends DialogFragment implements TimePickerDialog.OnTimeSetListener {
 
@@ -35,6 +39,9 @@ public class TimePickerFragment extends DialogFragment implements TimePickerDial
     }
 
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        // Do something with the time chosen by the user
+        // Douser something with the time chosen by the
+        SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd");
+        SpinnerFragment.date= sdf.format(new Date()) + " "+hourOfDay + ":"+String.format("%02d", minute);;
+
     }
 }

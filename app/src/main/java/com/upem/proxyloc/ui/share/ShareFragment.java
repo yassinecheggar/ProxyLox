@@ -111,11 +111,13 @@ public class ShareFragment extends Fragment implements CardAdaptor.OnNoteListene
 
     @Override
     public void onNoteClick(int position) {
-        Toast.makeText(getContext(), ""+position, Toast.LENGTH_SHORT).show();
+        Bundle result = new Bundle();
+        result.putString("bundleKey", String.valueOf( position));
 
-
+       SpinnerFragment fragment =  new SpinnerFragment();
+       fragment.setArguments(result);
        getActivity().getSupportFragmentManager().beginTransaction()
-                .replace(this.getId(), new SpinnerFragment())
+                .replace(this.getId(),fragment )
                .addToBackStack("spinners")
                 .commit();
     }

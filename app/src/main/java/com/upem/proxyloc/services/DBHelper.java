@@ -21,7 +21,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
     public DBHelper(Context context) {
-        super(context, DATABASE_NAME, null, 5);
+        super(context, DATABASE_NAME, null, 6);
 
     }
 
@@ -30,7 +30,7 @@ public class DBHelper extends SQLiteOpenHelper {
         // TODO Auto-generated method stub
         db.execSQL("create table mylocation (id integer primary key autoincrement, mac text,latitude text,longitude text, date text)");
         db.execSQL("create table expose (id integer primary key autoincrement, mac text, sec integer, startdate text, lastdate text)");
-
+        db.execSQL("create table myactivities (id integer primary key autoincrement, category text,activity text, startdate text)");
 
     }
 
@@ -39,6 +39,7 @@ public class DBHelper extends SQLiteOpenHelper {
         // TODO Auto-generated method stub
         db.execSQL("DROP TABLE IF EXISTS mylocation");
         db.execSQL("DROP TABLE IF EXISTS expose");
+        db.execSQL("DROP TABLE IF EXISTS myactivities");
         onCreate(db);
     }
 
@@ -98,6 +99,11 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("DELETE FROM expose");
     }
 
+    public void deleteallactivities() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM myactivities");
+    }
+
     public JSONArray getAll() {
 
         JSONArray array_list = new JSONArray();
@@ -135,6 +141,17 @@ public class DBHelper extends SQLiteOpenHelper {
         return true;
     }
 
+    public boolean insertactivity(String category ,String activity , String startdate ) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("category", category);
+        contentValues.put("activity", activity);
+        contentValues.put("startdate", startdate);
+
+        db.insert("myactivities", null, contentValues);
+        return true;
+    }
+
 
     public JSONArray getAllexpo() {
 
@@ -152,6 +169,31 @@ public class DBHelper extends SQLiteOpenHelper {
                 obj.put("startdate", res.getString(res.getColumnIndex("startdate")));
                 obj.put("lastdate", res.getString(res.getColumnIndex("lastdate")));
 
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            array_list.put(obj);
+            res.moveToNext();
+        }
+        return array_list;
+    }
+
+
+    public JSONArray getActivities() {
+
+        JSONArray array_list = new JSONArray();
+        //hp = new HashMap();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res = db.rawQuery("select * from myactivities", null);
+        res.moveToFirst();
+
+        while (res.isAfterLast() == false) {
+            JSONObject obj = new JSONObject();
+            try {
+                obj.put("category", res.getString(res.getColumnIndex("category")));
+                obj.put("activity", res.getString(res.getColumnIndex("activity")));
+                obj.put("startdate", res.getString(res.getColumnIndex("startdate")));
 
             } catch (JSONException e) {
                 e.printStackTrace();
