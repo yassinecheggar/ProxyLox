@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -23,17 +24,20 @@ import com.upem.proxyloc.R;
 import com.upem.proxyloc.services.BLE;
 import com.upem.proxyloc.services.TopicPublisher;
 import com.upem.proxyloc.services.TopicSubscriber;
+import com.upem.proxyloc.services.Wifi;
 
 public class ModeFragment extends Fragment {
 
 
 private Switch aSwitch;
+private Button button;
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
         final View root = inflater.inflate(R.layout.fragment_send, container, false);
 
          aSwitch = root.findViewById(R.id.switchmode);
+         button = root.findViewById(R.id.buttonWifi);
         final Intent ble  = new Intent(getActivity(), BLE.class);
 
          if(isMyServiceRunning(BLE.class)==true){aSwitch.setChecked(true);}
@@ -58,6 +62,13 @@ private Switch aSwitch;
         })
 
         ;
+
+         button.setOnClickListener(new View.OnClickListener() {
+             @Override
+             public void onClick(View v) {
+                 startWifiDetection();
+             }
+         });
 
         return root;
     }
@@ -84,6 +95,21 @@ private Switch aSwitch;
 
         } else {
            getActivity().startService(serviceIntent);
+
+        }
+
+    }
+
+
+    public void startWifiDetection(){
+
+        Intent serviceIntent = new Intent(getContext(), Wifi.class);
+
+        if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.O) {
+            getActivity().startForegroundService(serviceIntent);
+
+        } else {
+            getActivity().startService(serviceIntent);
 
         }
 
