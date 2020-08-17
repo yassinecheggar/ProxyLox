@@ -15,6 +15,8 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import com.upem.proxyloc.R;
+
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -121,7 +123,7 @@ public class TopicPublisher extends Service {
                         if (myJsonArray.length() > 0) {
                             Log.e("bbase", " size " + myJsonArray.length());
                             try {
-                                res = SenData(myJsonArray, "https://proxylox.herokuapp.com/out");
+                                res = SenData(myJsonArray, getString(R.string.link )+"/out");
                                 if (res == true) {
                                    dbHelper.deleteall();
                                 }
@@ -142,7 +144,7 @@ public class TopicPublisher extends Service {
                 if (myJsonArray2.length() > 0) {
 
                     try {
-                        res2 = SenData(myJsonArray2, "https://proxylox.herokuapp.com/out/"+Global.mac);
+                        res2 = SenData(myJsonArray2, getString(R.string.link )+"/out/"+Global.mac);
                         if (res2 == true) {
                             dbHelper.deleteallexpose();
                         }

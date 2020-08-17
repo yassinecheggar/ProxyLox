@@ -22,6 +22,8 @@
     <string name="mqtt_pass">usa9boldpiapdjqr9b7gii14h</string>
     <string name="mqtt_user">solace-cloud-client</string>
 
+    <string name="mqttPubTopic">proxylox/out/coords</string>
+    <string name="link">https://proxylox.osc-fr1.scalingo.com</string>
 
 
     <string-array name="planets_array">

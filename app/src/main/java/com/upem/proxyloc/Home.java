@@ -361,6 +361,7 @@ public class Home extends AppCompatActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case LocationRequest.PRIORITY_HIGH_ACCURACY:
                 switch (resultCode) {

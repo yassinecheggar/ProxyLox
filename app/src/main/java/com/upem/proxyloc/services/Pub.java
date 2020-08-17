@@ -65,7 +65,7 @@ public class Pub {
             System.out.println("Publishing message: " + content);
 
             // Publish the message
-            mqttClient.publish("proxylox/in/coords", message);
+            mqttClient.publish(context.getString(R.string.mqttPubTopic), message);
 
             // Disconnect the client
             mqttClient.disconnect();
