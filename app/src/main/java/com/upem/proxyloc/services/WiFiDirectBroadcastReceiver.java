@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.util.Log;
 import android.widget.Toast;
 
 public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
@@ -36,6 +37,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 Toast.makeText(context, "wifi p2p en false", Toast.LENGTH_SHORT).show();
             }
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
+
 
             if(manager!=null){
                 manager.requestPeers(channel,activity.peerListListener);
