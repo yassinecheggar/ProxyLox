@@ -17,7 +17,7 @@
 
     <fragment
         android:id="@+id/nav_gallery"
-        android:name="com.upem.proxyloc.ui.gallery.GalleryFragment"
+        android:name="com.upem.proxyloc.ui.Settings.SettingsFragment"
         android:label="@string/menu_gallery"
         tools:layout="@layout/fragment_gallery" />
 
@@ -29,13 +29,13 @@
 
     <fragment
         android:id="@+id/nav_tools"
-        android:name="com.upem.proxyloc.ui.tools.TimePickerFragment"
+        android:name="com.upem.proxyloc.ui.timePicker.TimePickerFragment"
         android:label="@string/menu_tools"
         tools:layout="@layout/fragment_tools" />
 
     <fragment
         android:id="@+id/nav_share"
-        android:name="com.upem.proxyloc.ui.share.ShareFragment"
+        android:name="com.upem.proxyloc.ui.Activities.ActivitiesFragment"
         android:label="@string/menu_share"
         tools:layout="@layout/fragment_share" />
 

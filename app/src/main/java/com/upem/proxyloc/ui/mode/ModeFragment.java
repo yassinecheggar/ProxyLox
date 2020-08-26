@@ -1,6 +1,7 @@
 package com.upem.proxyloc.ui.mode;
 
 import android.app.ActivityManager;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -26,6 +27,9 @@ import com.upem.proxyloc.services.TopicPublisher;
 import com.upem.proxyloc.services.TopicSubscriber;
 import com.upem.proxyloc.services.Wifi;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class ModeFragment extends Fragment {
 
 
@@ -48,15 +52,23 @@ private Button button;
 
 
                 if((isMyServiceRunning(BLE.class)==false)&& aSwitch.isChecked()==true){
-                    startDetection();
+
+                    startBleu();
+
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            startDetection();
+                        }
+                    }, 2000);
+
                     Log.e("start ble", "onCheckedChanged: ");
                 }else if(((isMyServiceRunning(BLE.class)==true)&& aSwitch.isChecked()==false)){
 
                     getActivity().stopService(new Intent(getActivity(), BLE.class));
                     Log.e("Stop ble", "onCheckedChanged: ");
+                    stopBleu();
                 }
-
-
 
             }
         })
@@ -113,6 +125,19 @@ private Button button;
 
         }
 
+    }
+
+    public void startBleu(){
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (!mBluetoothAdapter.isEnabled()) {
+            mBluetoothAdapter.enable();
+        }
+    }
+    public void stopBleu(){
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter.isEnabled()) {
+            mBluetoothAdapter.disable();
+        }
     }
 
 

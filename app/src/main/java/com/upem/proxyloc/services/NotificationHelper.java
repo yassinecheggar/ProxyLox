@@ -33,8 +33,7 @@ public class NotificationHelper extends ContextWrapper {
         super( base );
 
         notifManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        long [] swPattern = new long[] { 0, 500, 110, 500, 110, 450, 110, 200, 110,
-                170, 40, 450, 110, 200, 110, 170, 40, 500 };
+        long [] swPattern = new long[] {0, 400, 200, 400,200,400};
 
         NotificationChannel notificationChannelHigh = new NotificationChannel(
                 CHANNEL_HIGH_ID, CHANNEL_HIGH_NAME, notifManager.IMPORTANCE_HIGH );

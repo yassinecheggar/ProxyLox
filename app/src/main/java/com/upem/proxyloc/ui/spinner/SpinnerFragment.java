@@ -1,6 +1,5 @@
 package com.upem.proxyloc.ui.spinner;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,8 +8,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
@@ -20,11 +17,7 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.upem.proxyloc.R;
 import com.upem.proxyloc.services.DBHelper;
-import com.upem.proxyloc.ui.tools.TimePickerFragment;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.upem.proxyloc.ui.timePicker.TimePickerFragment;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -52,12 +45,32 @@ public class SpinnerFragment extends Fragment {
         Bundle bundle = this.getArguments();
         categorie = bundle.getString("bundleKey");
          // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(root.getContext(),
-                R.array.planets_array, R.layout.spinner_item);
-         // Specify the layout to use when the list of choices appears
-        adapter.setDropDownViewResource(R.layout.spinner_dropdown);
-        // Apply the adapter to the spinner
-        spinner.setAdapter(adapter);
+        if(categorie.equals("0")){
+            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(root.getContext(), R.array.planets_array, R.layout.spinner_item);
+            adapter.setDropDownViewResource(R.layout.spinner_dropdown);
+            spinner.setAdapter(adapter);
+        }
+        if(categorie.equals("1")){
+            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(root.getContext(), R.array.array2, R.layout.spinner_item);
+            adapter.setDropDownViewResource(R.layout.spinner_dropdown);
+            spinner.setAdapter(adapter);
+        }
+        if(categorie.equals("2")){
+            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(root.getContext(), R.array.array3, R.layout.spinner_item);
+            adapter.setDropDownViewResource(R.layout.spinner_dropdown);
+            spinner.setAdapter(adapter);
+        }
+        if(categorie.equals("3")){
+            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(root.getContext(), R.array.array4, R.layout.spinner_item);
+            adapter.setDropDownViewResource(R.layout.spinner_dropdown);
+            spinner.setAdapter(adapter);
+        }
+        if(categorie.equals("4")){
+            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(root.getContext(), R.array.array5, R.layout.spinner_item);
+            adapter.setDropDownViewResource(R.layout.spinner_dropdown);
+            spinner.setAdapter(adapter);
+        }
+
 
         Button but =  root.findViewById(R.id.but);
         Button but2 =  root.findViewById(R.id.button2);

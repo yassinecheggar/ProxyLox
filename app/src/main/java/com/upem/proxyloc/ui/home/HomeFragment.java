@@ -75,9 +75,9 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private Activity ctx;
     LocationManager locationManager;
     private static final int REQUEST_LOCATION_PERMISSION = 1;
-    Marker marker;
+    private Marker marker;
     LocationListener locationListener;
-
+    private int count=0;
     private int temp;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -85,6 +85,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         View root = inflater.inflate(R.layout.fragment_home, container, false);
 
         Bundle mapViewBundle = null;
+        marker = null;
         if (savedInstanceState != null) {
             mapViewBundle = savedInstanceState.getBundle(MAP_VIEW_BUNDLE_KEY);
         }
@@ -119,12 +120,16 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                     Cor = latLng;
 
                     if (marker != null) {
+
                         marker.remove();
                         marker = gmap.addMarker(new MarkerOptions().position(latLng).title("Me").icon(BitmapDescriptorFactory
                                 .defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
-                        // gmap.setMaxZoomPreference(7);
-                        //gmap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                        //gmap.animateCamera(CameraUpdateFactory.zoomTo(13.0f));
+                        if(count<2){
+
+                        gmap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                        marker.setZIndex(7);
+                        gmap.animateCamera(CameraUpdateFactory.zoomTo(13.0f));}
+                        count++;
 
                     } else {
                         marker = gmap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory
@@ -625,7 +630,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             try {
                 JSONObject loc = jsonArray.getJSONObject(i);
                 if (loc != null) {
-                    if (loc.getString("UsrStatus").equals("1")) {
+                    if (loc.getString("UsrStatus").equals("0")) {
                         LatLng latLng = new LatLng(loc.getDouble("latitude"), loc.getDouble("longitude"));
 
                         marker = googleMap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory

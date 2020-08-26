@@ -1,23 +1,14 @@
-package com.upem.proxyloc.ui.share;
+package com.upem.proxyloc.ui.Activities;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebChromeClient;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -31,7 +22,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ShareFragment extends Fragment implements CardAdaptor.OnNoteListener {
+public class ActivitiesFragment extends Fragment implements CardAdaptor.OnNoteListener {
 
     private Spinner spinner;
     private static final String[] paths = {"item 1", "item 2", "item 3"};
@@ -81,23 +72,23 @@ public class ShareFragment extends Fragment implements CardAdaptor.OnNoteListene
 
         List<JSONObject> jsonObjects = new ArrayList<>();
         JSONObject obj1 = new JSONObject();
-        obj1.put("text", "test1");
+        obj1.put("text", "Low");
         obj1.put("image", R.drawable.loow);
 
         JSONObject obj2 = new JSONObject();
-        obj2.put("text", "test2");
+        obj2.put("text", "Low/Medium");
         obj2.put("image", R.drawable.low);
 
         JSONObject obj3 = new JSONObject();
-        obj3.put("text", "test2");
+        obj3.put("text", "Medium");
         obj3.put("image", R.drawable.high);
 
         JSONObject obj4 = new JSONObject();
-        obj4.put("text", "test2");
+        obj4.put("text", "Medium/High");
         obj4.put("image", R.drawable.hightch);
 
         JSONObject obj5 = new JSONObject();
-        obj5.put("text", "test2");
+        obj5.put("text", "High");
         obj5.put("image", R.drawable.extreem);
 
         jsonObjects.add(obj1);

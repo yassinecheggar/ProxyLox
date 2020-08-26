@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseSettings;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Build;
@@ -24,6 +25,7 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.navigation.ui.AppBarConfiguration;
 
 import com.upem.proxyloc.R;
+import com.uriio.beacons.Beacons;
 
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
@@ -37,9 +39,11 @@ import org.altbeacon.beacon.Region;
 import org.json.JSONArray;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.List;
 
 public class BLE extends Service implements BeaconConsumer {
     private AppBarConfiguration mAppBarConfiguration;
@@ -53,7 +57,7 @@ public class BLE extends Service implements BeaconConsumer {
     private  DBHelper dbHelper;
     private  NotificationHelper notificationHelper ;
     public static final String DATE_FORMAT_2 = "yyyy-MM-dd HH:mm:ss";
-
+    private SharedPreferences prefs;
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -81,6 +85,9 @@ public class BLE extends Service implements BeaconConsumer {
         startForeground(1, notificationHelper.cretNotification());
         jsonBeacons =  new JSONArray();
         dbHelper  =  new DBHelper(this);
+        // prefs = getBaseContext.getSharedPreferences("ProxyLoxStatus", MODE_PRIVATE);
+
+
 
     }
 
@@ -91,7 +98,7 @@ public class BLE extends Service implements BeaconConsumer {
         Beacon beacon = new Beacon.Builder()
                 .setId1(myUUid(Global.mac))
                 .setId2("1")
-                .setId3("2")
+                .setId3(Global.Userstauts)
                 .setManufacturer(0x0118) // Radius Networks.  Change this for other beacon layouts
                 .setTxPower(-59)
                 .setDataFields(Arrays.asList(new Long[]{3l}))
@@ -142,6 +149,7 @@ public class BLE extends Service implements BeaconConsumer {
             public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
 
                Log.e(TAG, "didRangeBeaconsInRegion: " + dbHelper.getAllexpo().length() );
+              // Log.e(TAG, "didRangeBeaconsInRegion: " + beacons.iterator().next().get );
 
                 if (beacons.size() > 0) {
                     //Log.e(TAG, "The first beacon " + beacons.iterator().next().getDistance() + " meters away : beacon  size" + beacons.size());
@@ -155,13 +163,22 @@ public class BLE extends Service implements BeaconConsumer {
                              dbHelper.updateExpose(cur.getString(1),cur.getInt(2)+1,dateFormat.format(Calendar.getInstance().getTime()));
                            // Log.e("lola", "  count  " +cur.getString(0) + "  " +  cur.getString(1)+ " "+ cur.getString(2));
                         }
+
                     }
                     // notificationId is a unique int for each notification that you must define
+
                     if (Ntfcount < beacons.size()) {
                        // final NotificationHelper notificationHelper = new NotificationHelper(getBaseContext());
                         //notificationHelper.notify(12, true, "My title", "My content" );*n
-                        notificationHelper.Notifications(Ntfcount+100);
+
+                        for (int i=0;i>Ntfcount;i++){
+                            beacons.iterator().next();
+                        }
+                         if(beacons.iterator().next().getId3().toString().equals("1")){
+                        notificationHelper.notify((int) (Math.random()*100)+20, true, "WARNING", "ProxyLox has detected an Infected person");
+
                         Ntfcount++;
+                         }
                     }
                 }
             }

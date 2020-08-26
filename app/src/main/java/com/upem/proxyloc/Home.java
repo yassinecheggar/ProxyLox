@@ -43,10 +43,10 @@ import com.google.android.material.navigation.NavigationView;
 import com.upem.proxyloc.services.Global;
 import com.upem.proxyloc.services.TopicPublisher;
 import com.upem.proxyloc.services.TopicSubscriber;
-import com.upem.proxyloc.ui.gallery.GalleryFragment;
+import com.upem.proxyloc.ui.Activities.ActivitiesFragment;
+import com.upem.proxyloc.ui.Settings.SettingsFragment;
 import com.upem.proxyloc.ui.home.HomeFragment;
 import com.upem.proxyloc.ui.mode.ModeFragment;
-import com.upem.proxyloc.ui.share.ShareFragment;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -121,10 +121,10 @@ public class Home extends AppCompatActivity {
                     case R.id.nav_test:
 
 
-                        ShareFragment shareFragment= null;
-                        shareFragment= (ShareFragment) getSupportFragmentManager().findFragmentByTag("navtest");
+                        ActivitiesFragment shareFragment= null;
+                        shareFragment= (ActivitiesFragment) getSupportFragmentManager().findFragmentByTag("navtest");
                         if(shareFragment == null ){
-                             shareFragment = new ShareFragment();
+                             shareFragment = new ActivitiesFragment();
                         }
 
                         getSupportFragmentManager().beginTransaction()
@@ -138,15 +138,15 @@ public class Home extends AppCompatActivity {
 
                     case R.id.nav_gallery:
 
-                        GalleryFragment galleryFragment= null;
-                        galleryFragment= (GalleryFragment) getSupportFragmentManager().findFragmentByTag("SettingsFragment");
+                        SettingsFragment galleryFragment= null;
+                        galleryFragment= (SettingsFragment) getSupportFragmentManager().findFragmentByTag("ActivitiesFragment");
                         if(galleryFragment == null ){
-                             galleryFragment = new GalleryFragment();
+                             galleryFragment = new SettingsFragment();
                         }
 
 
                         getSupportFragmentManager().beginTransaction()
-                                .replace(getVisibleFragment().getId(), galleryFragment, "SettingsFragment")
+                                .replace(getVisibleFragment().getId(), galleryFragment, "ActivitiesFragment")
                                 .addToBackStack(null)
                                 .commit();
                         Log.e("gall", "onNavigationItemSelected: " + getVisibleFragment().getId() + " :" + R.id.fragment3);
@@ -300,7 +300,8 @@ public class Home extends AppCompatActivity {
                     .setCancelable(false)
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            finish();
+
+                            System.exit(0);
                         }
                     })
                     .setNegativeButton("No", new DialogInterface.OnClickListener() {

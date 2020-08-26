@@ -140,8 +140,10 @@ public class SplashScreen extends AppCompatActivity {
             public void run() {
                 Intent i = new Intent(SplashScreen.this  ,Home.class);
                 startActivity(i);
+                ActivityCompat.finishAffinity(SplashScreen.this);
             }
         },splashTime);
+
     }
 
 }

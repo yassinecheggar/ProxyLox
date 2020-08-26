@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 
@@ -31,12 +32,16 @@ public class Sub {
     private MqttConnectOptions connOpts;
     private Context context;
     private Activity  activity;
+    private NotificationHelper notificationHelper;
 
 
 private  Intent ble ;
     public Sub(Context context) {
         this.context = context;
        ble = new Intent(context,BLE.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationHelper = new NotificationHelper(context);
+        }
     }
 
     public void Subscrib() {
@@ -108,8 +113,18 @@ private  Intent ble ;
                         SharedPreferences prefs = context.getSharedPreferences("ProxyLoxStatus", context.MODE_PRIVATE);
 
                             prefs.edit().putString("status",parts[1]).commit();
+
                             Global.Userstauts = parts[1] ;
                         }
+                    }
+
+                    if(msg.contains("Notify")){
+                        Log.e("msg", "messageArrived: " );
+                        String[] parts = msg.split(":");
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            notificationHelper.notify((int) (Math.random()*10)+2, true, "Message", parts[1]);
+                        }
+
                     }
 
                    // JSONObject obj = new JSONObject(msg);

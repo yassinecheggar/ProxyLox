@@ -27,14 +27,52 @@
 
 
     <string-array name="planets_array">
-        <item>Mercury</item>
-        <item>Venus</item>
-        <item>Earth</item>
-        <item>Mars</item>
-        <item>Jupiter</item>
-        <item>Saturn</item>
-        <item>Uranus</item>
-        <item>Neptune</item>
+        <item>Biking</item>
+        <item>Running</item>
+        <item>Staying at home</item>
+        <item>walking out door</item>
+        <item>Picking up Food</item>
+        <item>Picking up Groceries</item>
+        <item>Picking up coffee</item>
+        <item>Outdoor Picnic </item>
     </string-array>
+
+    <string-array name="array2">
+        <item>Playing Distance Sport</item>
+        <item>Retail shopping</item>
+        <item>Grocery shopping</item>
+    </string-array>
+
+    <string-array name="array3">
+        <item>Visiting hospital</item>
+        <item>Museum</item>
+        <item>Medical Office visit</item>
+        <item>Dentist appointment</item>
+        <item>Outdoor Restaurant</item>
+        <item>Taking Taxi</item>
+        <item>Ride sharing Services</item>
+
+    </string-array>
+
+    <string-array name="array4">
+        <item>Working in Office</item>
+        <item>Exercising at the Gym</item>
+        <item>Barbershop</item>
+        <item>Hair/nail salon</item>
+        <item>Indoor restaurant</item>
+        <item>Coffee shop</item>
+    </string-array>
+
+    <string-array name="array5">
+        <item>Air travel</item>
+        <item>Indoor Party</item>
+        <item>Public Transportation</item>
+        <item>Night club/bar</item>
+        <item>Movie Theater</item>
+        <item>Concert</item>
+        <item>Watch Sport</item>
+        <item>Contact Sport</item>
+    </string-array>
+
 
 </resources>
