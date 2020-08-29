@@ -65,7 +65,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private MapView mapView;
     private GoogleMap gmap;
 
-    private List<MarkerOptions> markers;
+
     private static final String MAP_VIEW_BUNDLE_KEY = "MapViewBundleKey";
     private ArrayList<String> permissionsToRequest;
     private ArrayList<String> permissionsRejected = new ArrayList<>();
@@ -134,7 +134,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                     } else {
                         marker = gmap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory
                                 .defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
-                        gmap.setMaxZoomPreference(7);
+                        marker.setZIndex(7);
                         gmap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
                         gmap.animateCamera(CameraUpdateFactory.zoomTo(13.0f));
                     }
@@ -243,16 +243,15 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
 
         try {
-            jsonArray = markers.execute(getString(R.string.link )+"/jstst").get();
-
+            jsonArray = markers.execute(getString(R.string.link )+"/jstst2/"+Global.mac).get();
+           // Log.e("json out", "onMapReady: "+jsonArray );
+           // jsonArray =  new JSONArray("[{\"TimeColumn\":\"2020-08-07 04:59:47\",\"UsrStatus\":\"3\",\"latitude\":\"48.845765\",\"longitude\":\"2.5861549999999998\",\"mac\":\"356802081842261\"},{\"TimeColumn\":\"2020-08-09 18:50:12\",\"UsrStatus\":\"0\",\"latitude\":\"48.84473500000001\",\"longitude\":\"2.5837533333333336\",\"mac\":\"aeaafbebd62b5ff2\"},{\"TimeColumn\":\"2020-08-15 10:56:32\",\"UsrStatus\":\"0\",\"latitude\":\"37.421998333333335\",\"longitude\":\"-122.08400000000002\",\"mac\":\"fc1e9cb566f16c77\"},{\"TimeColumn\":\"2020-08-17 03:52:24\",\"UsrStatus\":\"1\",\"latitude\":\"48.844721666666665\",\"longitude\":\"2.5838033333333335\",\"mac\":\"352499083423093\"},{\"TimeColumn\":\"2020-08-28 17:51:01\",\"UsrStatus\":\"3\",\"latitude\":\"47.67973470785645\",\"longitude\":\"1.6364640976092992\",\"mac\":\"1\"},{\"TimeColumn\":\"2020-08-28 21:57:45\",\"UsrStatus\":\"3\",\"latitude\":\"48.8450173\",\"longitude\":\"2.5839966\",\"mac\":\"863692041556812\"},{\"TimeColumn\":\"2020-08-28 21:57:45\",\"UsrStatus\":\"3\",\"latitude\":\"48.8450173\",\"longitude\":\"2.5839966\",\"mac\":\"8636920415\"}]");
             if (jsonArray != null) {
-                update(gmap, jsonArray);
+                update(googleMap, jsonArray);
             }
 
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            Log.e("TAG", "onMapReady: "+e.getMessage() );
         }
 /*
         temp=0;
@@ -563,6 +562,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+
+
                 }
 
                 @Override
@@ -629,22 +630,35 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         for (int i = 0; i < jsonArray.length(); i++) {
             try {
                 JSONObject loc = jsonArray.getJSONObject(i);
+
                 if (loc != null) {
+
                     if (loc.getString("UsrStatus").equals("0")) {
+
                         LatLng latLng = new LatLng(loc.getDouble("latitude"), loc.getDouble("longitude"));
 
-                        marker = googleMap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory
+                        gmap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory
                                 .defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
 
-                    } else {
+                    }else if (loc.getString("UsrStatus").equals("3")) {
+                        Log.e("TAG", "json"+loc);
                         LatLng latLng = new LatLng(loc.getDouble("latitude"), loc.getDouble("longitude"));
 
-                        marker = googleMap.addMarker(new MarkerOptions().position(latLng));
+                         gmap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory
+                                .defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)));
+
+                    }else if (loc.getString("UsrStatus").equals("1")) {
+                        LatLng latLng = new LatLng(loc.getDouble("latitude"), loc.getDouble("longitude"));
+
+                         gmap.addMarker(new MarkerOptions().position(latLng));
                     }
+
                 }
             } catch (JSONException e) {
-                e.printStackTrace();
+                Log.e("TAG", "cathc err" + e.getMessage()); e.printStackTrace();
             }
+
+
         }
     }
 

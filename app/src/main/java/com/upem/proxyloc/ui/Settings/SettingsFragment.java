@@ -40,7 +40,7 @@ public class SettingsFragment extends Fragment {
                 MSwitch.setChecked(true);
             }
 
-            if(restoredText.equals("2")) {
+            if(restoredText.equals("3")) {
                 SSwitch.setChecked(true);
             }
 
@@ -48,8 +48,8 @@ public class SettingsFragment extends Fragment {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if(isChecked== true){
-                        prefs.edit().putString("status","2").commit();
-                        Global.Userstauts = "2";
+                        prefs.edit().putString("status","3").commit();
+                        Global.Userstauts = "3";
                     }else{
                         prefs.edit().putString("status","0").commit();
                         Global.Userstauts = "0";

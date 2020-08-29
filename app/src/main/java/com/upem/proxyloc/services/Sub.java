@@ -109,7 +109,7 @@ private  Intent ble ;
                     if(msg.contains("setStatus")){
                         Log.e("msg", "messageArrived: " );
                         String[] parts = msg.split(":");
-                        if((parts[1].equals("0"))||parts[1].equals("1")||(parts[1].equals("2"))){
+                        if((parts[1].equals("0"))||parts[1].equals("1")||(parts[1].equals("3"))){
                         SharedPreferences prefs = context.getSharedPreferences("ProxyLoxStatus", context.MODE_PRIVATE);
 
                             prefs.edit().putString("status",parts[1]).commit();
